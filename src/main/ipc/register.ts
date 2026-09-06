@@ -2,6 +2,9 @@ import { BrowserWindow, dialog, ipcMain, nativeTheme, shell, app } from 'electro
 import path from 'node:path'
 import type {
   AddConsoleInput,
+  BackupExportResult,
+  BackupImportMode,
+  BackupImportResult,
   BulkAddResult,
   AppInfo,
   AppSettings,
@@ -21,6 +24,7 @@ import { ok, toResult, UserFacingError } from '../errors'
 import type { LibraryRepository } from '../services/libraryRepository'
 import type { SettingsRepository, SettingsPatch } from '../services/settingsRepository'
 import { inspectExecutable, isWindows } from '../services/executables'
+import { buildBackup, readBackup, suggestBackupFileName, writeBackup, type ParsedBackup } from '../services/backup'
 import { launchEmulator } from '../services/launcher'
 import { isAutoLaunchSupported, setAutoLaunch } from '../services/autoLaunch'
 import type { WindowManager } from '../window'
@@ -145,6 +149,107 @@ export function registerIpcHandlers(context: IpcContext): void {
     return Object.fromEntries(results)
   })
 
+  /* ------------------------------------- backup & restore ---------- */
+
+  /**
+   * Writes the library and preferences to a file the user picks. Nothing is
+   * read from or written to anywhere else on disk.
+   */
+  handle<BackupExportResult | null>(IpcChannel.backupExport, async () => {
+    const parent = BrowserWindow.getFocusedWindow() ?? windows.mainWindow
+    const result = await dialog.showSaveDialog(parent ?? new BrowserWindow({ show: false }), {
+      title: 'Export EmuHub backup',
+      buttonLabel: 'Export backup',
+      defaultPath: path.join(defaultBackupDirectory(), suggestBackupFileName()),
+      filters: [{ name: 'EmuHub backup', extensions: ['json'] }]
+    })
+
+    // A cancelled picker is a normal outcome, not an error.
+    if (result.canceled || !result.filePath) return null
+
+    // Not every platform appends the filter's extension for the user.
+    const filePath = result.filePath.toLowerCase().endsWith('.json') ? result.filePath : `${result.filePath}.json`
+    const consoles = await library.list()
+    await writeBackup(filePath, buildBackup(consoles, await settings.get(), app.getVersion()))
+    return { filePath, consoleCount: consoles.length }
+  })
+
+  /**
+   * Restores a previously exported backup. The user chooses between replacing
+   * the library and merging into it, and whether preferences come across, in a
+   * native dialog shown once the file has been read and validated — so a file
+   * that turns out not to be a backup is refused before anything changes.
+   */
+  handle<BackupImportResult | null>(IpcChannel.backupImport, async () => {
+    const parent = BrowserWindow.getFocusedWindow() ?? windows.mainWindow
+    const picked = await dialog.showOpenDialog(parent ?? new BrowserWindow({ show: false }), {
+      title: 'Import EmuHub backup',
+      buttonLabel: 'Open backup',
+      properties: ['openFile'],
+      filters: [
+        { name: 'EmuHub backup', extensions: ['json'] },
+        { name: 'All files', extensions: ['*'] }
+      ]
+    })
+    if (picked.canceled || picked.filePaths.length === 0) return null
+
+    const filePath = picked.filePaths[0] as string
+    const backup = await readBackup(filePath)
+
+    if (backup.consoles.length === 0) {
+      throw new UserFacingError(
+        'not-found',
+        'That backup does not contain any consoles EmuHub can restore.',
+        backup.unknownConsoles > 0
+          ? 'Its entries are for consoles this version of EmuHub no longer lists.'
+          : undefined
+      )
+    }
+
+    const existing = await library.list()
+    const buttons = existing.length > 0 ? ['Replace library', 'Merge into library', 'Cancel'] : ['Restore', 'Cancel']
+    const cancelId = buttons.length - 1
+
+    const answer = await dialog.showMessageBox(parent ?? new BrowserWindow({ show: false }), {
+      type: 'question',
+      title: 'Restore backup',
+      message:
+        backup.consoles.length === 1
+          ? 'Restore 1 console from this backup?'
+          : `Restore ${backup.consoles.length} consoles from this backup?`,
+      detail: describeBackup(backup, existing.length),
+      buttons,
+      defaultId: 0,
+      cancelId,
+      noLink: true,
+      ...(backup.settings
+        ? { checkboxLabel: 'Also restore preferences', checkboxChecked: true }
+        : {})
+    })
+    if (answer.response === cancelId) return null
+
+    const mode: BackupImportMode = existing.length === 0 || answer.response === 0 ? 'replace' : 'merge'
+    const { imported, skippedDuplicates } = await library.restore(backup.consoles, mode)
+    notifyLibraryChanged(windows)
+
+    let settingsRestored = false
+    if (backup.settings && answer.checkboxChecked) {
+      const next = await settings.restore(backup.settings)
+      await applySideEffects(next, context)
+      windows.send(IpcEvent.settingsChanged, next)
+      settingsRestored = true
+    }
+
+    return {
+      filePath,
+      mode,
+      imported,
+      skippedDuplicates,
+      skippedUnknown: backup.unknownConsoles,
+      settingsRestored
+    }
+  })
+
   /* --------------------------------------------- settings ---------- */
 
   handle<AppSettings>(IpcChannel.settingsGet, () => settings.get())
@@ -261,6 +366,47 @@ export function registerIpcHandlers(context: IpcContext): void {
 
 function notifyLibraryChanged(windows: WindowManager): void {
   windows.send(IpcEvent.libraryChanged)
+}
+
+/** Where the save dialog opens. Falls back to the home folder if there is no documents folder. */
+function defaultBackupDirectory(): string {
+  try {
+    return app.getPath('documents')
+  } catch {
+    return app.getPath('home')
+  }
+}
+
+/** Plain-language summary of what restoring this backup would do. */
+function describeBackup(backup: ParsedBackup, existingCount: number): string {
+  const lines: string[] = []
+
+  const exportedOn = backup.exportedAt ? new Date(backup.exportedAt) : null
+  if (exportedOn && !Number.isNaN(exportedOn.getTime())) {
+    lines.push(
+      backup.appVersion
+        ? `Exported on ${exportedOn.toLocaleDateString()} from EmuHub ${backup.appVersion}.`
+        : `Exported on ${exportedOn.toLocaleDateString()}.`
+    )
+  }
+
+  if (existingCount > 0) {
+    lines.push(
+      `Replacing removes the ${existingCount === 1 ? 'console' : `${existingCount} consoles`} currently in EmuHub. ` +
+        'Merging keeps them and adds only the consoles that are missing.'
+    )
+  }
+
+  if (backup.unknownConsoles > 0) {
+    lines.push(
+      backup.unknownConsoles === 1
+        ? 'One entry is for a console this version of EmuHub no longer lists and will be skipped.'
+        : `${backup.unknownConsoles} entries are for consoles this version of EmuHub no longer lists and will be skipped.`
+    )
+  }
+
+  lines.push('Only EmuHub’s own library changes — no emulator or file on your computer is touched.')
+  return lines.join('\n\n')
 }
 
 /** Applies settings that affect the OS or the window shell. */

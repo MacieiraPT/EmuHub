@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react'
 import { NavLink } from '../router'
 import { useLibrary } from '../state/LibraryContext'
-import { GridIcon, HomeIcon, SettingsIcon } from './icons'
+import { GridIcon, SettingsIcon } from './icons'
 import { BrandMark } from './TitleBar'
 
 interface NavItem {
@@ -13,8 +13,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Home', icon: <HomeIcon size={19} />, end: true },
-  { to: '/consoles', label: 'Consoles', icon: <GridIcon size={19} /> },
+  { to: '/', label: 'My Emulators', icon: <GridIcon size={19} />, end: true },
   { to: '/settings', label: 'Settings', icon: <SettingsIcon size={19} />, shortcut: 'Ctrl ,' }
 ]
 
@@ -41,7 +40,7 @@ export function Sidebar() {
             >
               <span className="sidebar__icon">{item.icon}</span>
               <span className="sidebar__label">{item.label}</span>
-              {item.to === '/consoles' && entries.length > 0 ? (
+              {item.to === '/' && entries.length > 0 ? (
                 <span className="sidebar__count">{entries.length}</span>
               ) : null}
             </NavLink>

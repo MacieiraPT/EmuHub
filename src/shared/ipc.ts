@@ -18,6 +18,9 @@ export const IpcChannel = {
   libraryLaunch: 'library:launch',
   libraryCheckEmulators: 'library:check-emulators',
 
+  backupExport: 'backup:export',
+  backupImport: 'backup:import',
+
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',
   settingsReset: 'settings:reset',

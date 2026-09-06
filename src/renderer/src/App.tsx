@@ -9,8 +9,7 @@ import { Sidebar } from './components/Sidebar'
 import { Toasts } from './components/ui/Toasts'
 import { ConsoleArtSprite } from './components/artwork/ConsoleArt'
 import { OnboardingFlow } from './features/onboarding/OnboardingFlow'
-import { HomePage } from './features/home/HomePage'
-import { ConsolesPage } from './features/consoles/ConsolesPage'
+import { MyEmulatorsPage } from './features/consoles/MyEmulatorsPage'
 import { ConsoleDetailPage } from './features/detail/ConsoleDetailPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 
@@ -57,8 +56,7 @@ export function App() {
 }
 
 const ROUTES: RouteDefinition[] = [
-  { path: '/', element: <HomePage /> },
-  { path: '/consoles', element: <ConsolesPage /> },
+  { path: '/', element: <MyEmulatorsPage /> },
   { path: '/console/:entryId', element: <ConsoleDetailPage /> },
   { path: '/settings', element: <SettingsPage /> }
 ]
@@ -70,7 +68,7 @@ function MainRoutes() {
     <main className="app__main" id="main-content" tabIndex={-1}>
       {/* Keying on the path replays the enter transition on each section change. */}
       <div className="view" key={path}>
-        <Routes routes={ROUTES} fallback={<HomePage />} />
+        <Routes routes={ROUTES} fallback={<MyEmulatorsPage />} />
       </div>
     </main>
   )

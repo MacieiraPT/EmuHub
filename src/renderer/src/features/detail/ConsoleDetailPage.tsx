@@ -44,7 +44,7 @@ export function ConsoleDetailPage() {
           }
           action={
             <Button variant="primary" onClick={() => navigate('/')}>
-              Back to library
+              Back to My Emulators
             </Button>
           }
         />
@@ -103,7 +103,7 @@ export function ConsoleDetailPage() {
     <div className="page page--detail">
       <Link to="/" className="detail__back">
         <ChevronLeftIcon size={16} />
-        Back to library
+        Back to My Emulators
       </Link>
 
       <section className="detail__hero">

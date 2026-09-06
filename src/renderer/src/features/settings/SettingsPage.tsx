@@ -10,8 +10,17 @@ import { Button } from '../../components/ui/Button'
 import { Toggle } from '../../components/ui/Toggle'
 import { SegmentedControl } from '../../components/ui/SegmentedControl'
 import { Select } from '../../components/ui/Select'
-import { ExternalIcon, MonitorIcon, MoonIcon, RefreshIcon, SunIcon, TrashIcon } from '../../components/icons'
-import { pluralize } from '../../lib/format'
+import {
+  DownloadIcon,
+  ExternalIcon,
+  MonitorIcon,
+  MoonIcon,
+  RefreshIcon,
+  SunIcon,
+  TrashIcon,
+  UploadIcon
+} from '../../components/icons'
+import { fileNameOf, pluralize } from '../../lib/format'
 
 const ACCENTS: { value: AccentColor; label: string }[] = [
   { value: 'violet', label: 'Violet' },
@@ -32,6 +41,7 @@ export function SettingsPage() {
   const { entries, clearAll } = useLibrary()
   const { notify } = useToast()
   const [info, setInfo] = useState<AppInfo | null>(null)
+  const [backupBusy, setBackupBusy] = useState<'export' | 'import' | null>(null)
 
   useEffect(() => {
     void unwrap(bridge.app.info())
@@ -47,6 +57,56 @@ export function SettingsPage() {
       if (message) notify({ tone: 'success', title: message })
     } catch (error) {
       notify({ tone: 'error', title: 'Could not save that setting', ...describeError(error) })
+    }
+  }
+
+  /**
+   * The main process owns both file dialogs, so a cancelled picker comes back
+   * as `null` and is simply not reported. A completed restore arrives in the
+   * library and settings through the usual change events.
+   */
+  const exportBackup = async (): Promise<void> => {
+    setBackupBusy('export')
+    try {
+      const result = await unwrap(bridge.backup.export())
+      if (!result) return
+      notify({
+        tone: 'success',
+        title: 'Backup exported',
+        description: `${pluralize(result.consoleCount, 'console')} and your preferences were saved to ${fileNameOf(result.filePath)}.`
+      })
+    } catch (error) {
+      notify({ tone: 'error', title: 'Could not export your backup', ...describeError(error) })
+    } finally {
+      setBackupBusy(null)
+    }
+  }
+
+  const importBackup = async (): Promise<void> => {
+    setBackupBusy('import')
+    try {
+      const result = await unwrap(bridge.backup.import())
+      if (!result) return
+
+      const notes = [
+        result.skippedDuplicates > 0
+          ? `${pluralize(result.skippedDuplicates, 'console')} already in your library ${result.skippedDuplicates === 1 ? 'was' : 'were'} left unchanged.`
+          : null,
+        result.skippedUnknown > 0
+          ? `${pluralize(result.skippedUnknown, 'entry', 'entries')} for consoles EmuHub no longer lists ${result.skippedUnknown === 1 ? 'was' : 'were'} skipped.`
+          : null,
+        result.settingsRestored ? 'Your preferences were restored too.' : null
+      ].filter(Boolean)
+
+      notify({
+        tone: 'success',
+        title: result.mode === 'merge' ? 'Backup merged into your library' : 'Library restored from backup',
+        description: [`${pluralize(result.imported, 'console')} restored.`, ...notes].join(' ')
+      })
+    } catch (error) {
+      notify({ tone: 'error', title: 'Could not restore that backup', ...describeError(error) })
+    } finally {
+      setBackupBusy(null)
     }
   }
 
@@ -200,6 +260,49 @@ export function SettingsPage() {
             checked={settings.library.showMissingWarnings}
             onChange={(value) => void patch({ library: { showMissingWarnings: value } })}
           />
+        </div>
+      </section>
+
+      <section className="panel">
+        <header className="panel__header">
+          <h2>Backup &amp; restore</h2>
+        </header>
+        <div className="settings-group">
+          <div className="setting-row">
+            <div className="setting-row__text">
+              <span className="setting-row__label">Export a backup</span>
+              <span className="setting-row__description">
+                Saves your consoles, their emulator paths and your preferences to a single file you can keep or carry to
+                another PC.
+              </span>
+            </div>
+            <Button
+              variant="secondary"
+              icon={<DownloadIcon size={15} />}
+              disabled={backupBusy !== null}
+              onClick={() => void exportBackup()}
+            >
+              Export backup…
+            </Button>
+          </div>
+
+          <div className="setting-row">
+            <div className="setting-row__text">
+              <span className="setting-row__label">Restore from a backup</span>
+              <span className="setting-row__description">
+                Reads a backup file back into EmuHub. You choose whether it replaces your library or merges into it —
+                emulator programs on this PC are never changed.
+              </span>
+            </div>
+            <Button
+              variant="secondary"
+              icon={<UploadIcon size={15} />}
+              disabled={backupBusy !== null}
+              onClick={() => void importBackup()}
+            >
+              Import backup…
+            </Button>
+          </div>
         </div>
       </section>
 

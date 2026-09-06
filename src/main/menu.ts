@@ -37,14 +37,9 @@ export function installApplicationMenu(windows: WindowManager): void {
       label: 'View',
       submenu: [
         {
-          label: 'Library',
+          label: 'My Emulators',
           accelerator: 'Command+1',
           click: () => windows.send(IpcEvent.navigate, '/')
-        },
-        {
-          label: 'Consoles',
-          accelerator: 'Command+2',
-          click: () => windows.send(IpcEvent.navigate, '/consoles')
         },
         { type: 'separator' },
         { role: 'togglefullscreen' },

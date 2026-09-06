@@ -138,6 +138,47 @@ export interface SettingsData extends AppSettings {
 }
 
 /* ------------------------------------------------------------------ */
+/* Backup and restore                                                  */
+/* ------------------------------------------------------------------ */
+
+/** The preferences a backup carries. Onboarding state is deliberately left out. */
+export type BackupSettings = Omit<AppSettings, 'onboarding'>
+
+/**
+ * The document written to the file the user picks. Self-describing so a file
+ * that is not an EmuHub backup can be refused before anything is overwritten.
+ */
+export interface BackupDocument {
+  format: string
+  formatVersion: number
+  exportedAt: string
+  appVersion: string
+  library: LibraryData
+  /** Null when the backup was written without preferences. */
+  settings: BackupSettings | null
+}
+
+/** How an imported backup is applied to the existing library. */
+export type BackupImportMode = 'replace' | 'merge'
+
+export interface BackupExportResult {
+  filePath: string
+  consoleCount: number
+}
+
+export interface BackupImportResult {
+  filePath: string
+  mode: BackupImportMode
+  /** Consoles actually written into the library. */
+  imported: number
+  /** Consoles already in the library, left as they were (merge only). */
+  skippedDuplicates: number
+  /** Consoles in the backup this build no longer has a catalog entry for. */
+  skippedUnknown: number
+  settingsRestored: boolean
+}
+
+/* ------------------------------------------------------------------ */
 /* IPC payloads and results                                            */
 /* ------------------------------------------------------------------ */
 

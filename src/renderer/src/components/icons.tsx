@@ -23,12 +23,6 @@ function Icon({ size = 18, children, ...props }: IconProps) {
   )
 }
 
-export const HomeIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <path d="M3.6 10.2 12 3.8l8.4 6.4V19a1.4 1.4 0 0 1-1.4 1.4h-3.6v-5.6H8.6v5.6H5a1.4 1.4 0 0 1-1.4-1.4z" />
-  </Icon>
-)
-
 export const GridIcon = (props: IconProps) => (
   <Icon {...props}>
     <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
@@ -150,6 +144,22 @@ export const ExternalIcon = (props: IconProps) => (
     <path d="M13.5 4.5H19.5V10.5" />
     <path d="m19.5 4.5-8 8" />
     <path d="M18 14.4v4.1a1.9 1.9 0 0 1-1.9 1.9H5.4a1.9 1.9 0 0 1-1.9-1.9V7.8a1.9 1.9 0 0 1 1.9-1.9h4.1" />
+  </Icon>
+)
+
+export const DownloadIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3.8v10.4" />
+    <path d="m7.9 10.1 4.1 4.1 4.1-4.1" />
+    <path d="M4.5 16.4v2a1.8 1.8 0 0 0 1.8 1.8h11.4a1.8 1.8 0 0 0 1.8-1.8v-2" />
+  </Icon>
+)
+
+export const UploadIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 14.2V3.8" />
+    <path d="m7.9 7.9 4.1-4.1 4.1 4.1" />
+    <path d="M4.5 16.4v2a1.8 1.8 0 0 0 1.8 1.8h11.4a1.8 1.8 0 0 0 1.8-1.8v-2" />
   </Icon>
 )
 

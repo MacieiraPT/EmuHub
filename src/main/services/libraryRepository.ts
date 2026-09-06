@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import type {
   AddConsoleInput,
+  BackupImportMode,
   ConfiguredConsole,
   EmulatorProfile,
   LibraryData,
@@ -255,6 +256,37 @@ export class LibraryRepository {
   async clear(): Promise<void> {
     await this.store.update((current) => ({ ...current, consoles: [] }))
   }
+
+  /**
+   * Applies console entries read from a backup. `replace` swaps the library for
+   * the backup, `merge` keeps what is already configured and adds only the
+   * consoles that are missing. Entry ids are regenerated so a restored entry
+   * can never collide with one already in the library, and a console can still
+   * only appear once — the same rule `add` enforces.
+   */
+  async restore(
+    consoles: ConfiguredConsole[],
+    mode: BackupImportMode
+  ): Promise<{ imported: number; skippedDuplicates: number }> {
+    const taken = new Set(mode === 'merge' ? (await this.list()).map((entry) => entry.consoleId) : [])
+    const accepted: ConfiguredConsole[] = []
+    let skippedDuplicates = 0
+
+    for (const entry of consoles) {
+      if (taken.has(entry.consoleId)) {
+        skippedDuplicates += 1
+        continue
+      }
+      taken.add(entry.consoleId)
+      accepted.push({ ...entry, id: randomUUID() })
+    }
+
+    await this.store.update((current) => ({
+      ...current,
+      consoles: mode === 'merge' ? [...current.consoles, ...accepted] : accepted
+    }))
+    return { imported: accepted.length, skippedDuplicates }
+  }
 }
 
 /**
@@ -268,13 +300,18 @@ function migrateLibrary(raw: unknown): LibraryData | null {
   if (!Array.isArray(source.consoles)) return null
 
   const consoles = source.consoles
-    .map(normalizeEntry)
+    .map(normalizeConsoleEntry)
     .filter((entry): entry is ConfiguredConsole => entry !== null)
 
   return { schemaVersion: LIBRARY_SCHEMA_VERSION, consoles }
 }
 
-function normalizeEntry(value: unknown): ConfiguredConsole | null {
+/**
+ * Repairs one console entry from any source — the store on disk or a backup
+ * file — into the current shape. Returns `null` only when the record carries
+ * nothing usable.
+ */
+export function normalizeConsoleEntry(value: unknown): ConfiguredConsole | null {
   if (!value || typeof value !== 'object') return null
   const raw = value as Record<string, unknown>
   const consoleId = typeof raw.consoleId === 'string' ? raw.consoleId : null
