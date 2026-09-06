@@ -4,6 +4,11 @@ import type { AppSettings, LibraryData, SettingsData } from './types'
 export const LIBRARY_SCHEMA_VERSION = 1
 export const SETTINGS_SCHEMA_VERSION = 1
 
+/** Marker written into exported backups so a foreign file is rejected early. */
+export const BACKUP_FORMAT = 'emuhub-backup'
+/** Bump only when a backup written today could no longer be read back. */
+export const BACKUP_FORMAT_VERSION = 1
+
 export const DEFAULT_SETTINGS: AppSettings = {
   general: {
     launchOnStartup: false,

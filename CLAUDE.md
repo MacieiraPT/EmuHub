@@ -79,6 +79,6 @@ Every gradient, mask and filter is defined once in `ConsoleArtSprite`, mounted a
 
 - **Cards, rows and picker tiles are memoised with explicit comparators** listing exactly the fields they render. `library.list()` returns fresh objects over IPC every reload, so reference equality never holds — if you add something to a card's visible output, add it to that comparator or it will not update.
 - **`useConsoleActions()` returns one object with a stable identity**, and the library store's callbacks read entries through `entriesRef` rather than depending on `entries`. Adding an `entries` dependency to those callbacks breaks memoisation for every card at once.
-- Routing is a local four-route hash router (`src/renderer/src/router/`), not react-router. There are no runtime dependencies at all — keep it that way unless there's a strong reason.
+- Routing is a local three-route hash router (`src/renderer/src/router/`), not react-router. There are no runtime dependencies at all — keep it that way unless there's a strong reason.
 - Styling is plain CSS with design tokens in `styles/theme.css`. Components read `var(--…)`; never hard-code a colour. Themes and accents only swap token values.
 - Avoid `backdrop-filter` on anything that repeats (cards, list rows) or persists (sidebar) — it repaints continuously. The modal scrim is the one accepted use.

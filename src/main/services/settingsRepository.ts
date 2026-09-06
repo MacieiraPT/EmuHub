@@ -1,5 +1,5 @@
 import path from 'node:path'
-import type { AppSettings, SettingsData } from '@shared/types'
+import type { AppSettings, BackupSettings, SettingsData } from '@shared/types'
 import { createDefaultSettingsData, DEFAULT_SETTINGS, SETTINGS_SCHEMA_VERSION } from '@shared/defaults'
 import { JsonStore } from './jsonStore'
 
@@ -56,11 +56,35 @@ export class SettingsRepository {
     return settings
   }
 
+  /**
+   * Applies preferences from a backup. Onboarding state stays as it is, so
+   * restoring on a configured machine never sends the user back through setup.
+   */
+  async restore(settings: BackupSettings): Promise<AppSettings> {
+    return this.update({
+      general: settings.general,
+      appearance: settings.appearance,
+      library: settings.library
+    })
+  }
+
   async setOnboardingCompleted(completed: boolean): Promise<AppSettings> {
     return this.update({
       onboarding: { completed, completedAt: completed ? new Date().toISOString() : null }
     })
   }
+}
+
+/**
+ * Reads the preferences section of a backup. Every value is validated by the
+ * same migration the store uses, so a hand-edited or older file can only ever
+ * produce settings this build understands.
+ */
+export function normalizeBackupSettings(raw: unknown): BackupSettings | null {
+  const settings = migrateSettings(raw)
+  if (!settings) return null
+  const { schemaVersion: _schemaVersion, onboarding: _onboarding, ...rest } = settings
+  return rest
 }
 
 function migrateSettings(raw: unknown): SettingsData | null {

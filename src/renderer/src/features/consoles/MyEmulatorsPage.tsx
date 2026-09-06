@@ -1,23 +1,37 @@
 import { useMemo, useState } from 'react'
+import type { LibrarySort } from '@shared/types'
+import { sortEntries, SORT_LABELS } from '@shared/library'
 import { useLibrary } from '../../state/LibraryContext'
 import { useSettings } from '../../state/SettingsContext'
-import { sortEntries } from '@shared/library'
-import { ConsoleCard, statusOf } from '../../components/ConsoleCard'
 import { PageHeader } from '../../components/PageHeader'
-import { AddConsoleDialog } from '../consoles/AddConsoleDialog'
+import { ConsoleCard, statusOf } from '../../components/ConsoleCard'
+import { ConsoleRow } from './ConsoleRow'
+import { AddConsoleDialog } from './AddConsoleDialog'
 import { Button } from '../../components/ui/Button'
 import { SearchField } from '../../components/ui/SearchField'
+import { Select } from '../../components/ui/Select'
+import { SegmentedControl } from '../../components/ui/SegmentedControl'
 import { EmptyState } from '../../components/ui/EmptyState'
-import { AlertIcon, LayersIcon, PlusIcon, SearchIcon } from '../../components/icons'
+import { AlertIcon, GridIcon, LayersIcon, PlusIcon, SearchIcon } from '../../components/icons'
 import { pluralize } from '../../lib/format'
-import { useConsoleActions } from '../consoles/useConsoleActions'
+import { useConsoleActions } from './useConsoleActions'
 import { useSearchShortcut } from '../../hooks/useSearchShortcut'
 
-export function HomePage() {
+type ViewMode = 'list' | 'grid'
+
+const SORT_OPTIONS = (Object.keys(SORT_LABELS) as LibrarySort[]).map((value) => ({
+  value,
+  label: SORT_LABELS[value]
+}))
+
+/** The library: every console the user has configured, and what it launches. */
+export function MyEmulatorsPage() {
   const { entries, health, loading, launching } = useLibrary()
   const { settings } = useSettings()
   const actions = useConsoleActions()
   const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<LibrarySort>(settings.library.defaultSort)
+  const [mode, setMode] = useState<ViewMode>('list')
   const [adding, setAdding] = useState(false)
   const searchRef = useSearchShortcut()
 
@@ -25,51 +39,72 @@ export function HomePage() {
     const needle = query.trim().toLowerCase()
     const filtered = needle
       ? entries.filter((view) =>
-          [view.displayName, view.definition?.manufacturer, view.emulator?.name, ...(view.definition?.aliases ?? [])]
+          [
+            view.displayName,
+            view.definition?.manufacturer,
+            view.emulator?.name,
+            view.emulator?.executablePath,
+            ...(view.definition?.aliases ?? [])
+          ]
             .filter(Boolean)
             .join(' ')
             .toLowerCase()
             .includes(needle)
         )
       : entries
-    return sortEntries(filtered, settings.library.defaultSort)
-  }, [entries, query, settings.library.defaultSort])
+    return sortEntries(filtered, sort)
+  }, [entries, query, sort])
 
   const missingCount = useMemo(
     () => entries.filter((view) => statusOf(view, health[view.entry.id]) === 'missing').length,
     [entries, health]
   )
 
-  const readyCount = entries.length - entries.filter((view) => !view.emulator).length
+  const readyCount = entries.filter((view) => view.emulator).length
 
   return (
     <div className="page">
       <PageHeader
-        title="Your library"
+        title="My Emulators"
         subtitle={
           loading
             ? 'Loading your consoles…'
             : entries.length === 0
-              ? 'No consoles configured yet'
+              ? 'Every console you configure appears here'
               : `${pluralize(entries.length, 'console')} · ${readyCount} ready to launch`
         }
         actions={
-          <>
-            {entries.length > 0 ? (
+          <Button variant="primary" icon={<PlusIcon size={16} />} onClick={() => setAdding(true)}>
+            Add Console
+          </Button>
+        }
+        toolbar={
+          entries.length > 0 ? (
+            <>
               <SearchField
                 ref={searchRef}
                 value={query}
                 onValueChange={setQuery}
                 label="Search your consoles"
-                placeholder="Search your library…"
+                placeholder="Search by console, emulator or path…"
                 shortcutHint="Ctrl F"
                 className="page-header__search"
               />
-            ) : null}
-            <Button variant="primary" icon={<PlusIcon size={16} />} onClick={() => setAdding(true)}>
-              Add Console
-            </Button>
-          </>
+              <div className="page-header__filters">
+                <Select value={sort} options={SORT_OPTIONS} onChange={setSort} label="Sort by" hideLabel />
+                <SegmentedControl<ViewMode>
+                  size="sm"
+                  label="View mode"
+                  value={mode}
+                  onChange={setMode}
+                  options={[
+                    { value: 'list', label: 'List', icon: <LayersIcon size={15} /> },
+                    { value: 'grid', label: 'Grid', icon: <GridIcon size={15} /> }
+                  ]}
+                />
+              </div>
+            </>
+          ) : null
         }
       />
 
@@ -104,14 +139,14 @@ export function HomePage() {
           compact
           icon={<SearchIcon size={22} />}
           title={`No consoles match “${query}”`}
-          description="Try a different name, or clear the search to see your whole library."
+          description="Try a different search term, or clear it to see everything again."
           action={
             <Button variant="secondary" onClick={() => setQuery('')}>
               Clear search
             </Button>
           }
         />
-      ) : (
+      ) : mode === 'grid' ? (
         <div className="console-grid">
           {visible.map((view) => (
             <ConsoleCard
@@ -129,6 +164,24 @@ export function HomePage() {
             <span className="add-card__title">Add console</span>
             <span className="add-card__text">Bring another emulator into your library</span>
           </button>
+        </div>
+      ) : (
+        <div className="console-list">
+          <div className="console-list__head" aria-hidden="true">
+            <span>Console</span>
+            <span>Emulator</span>
+            <span>Status</span>
+            <span />
+          </div>
+          {visible.map((view) => (
+            <ConsoleRow
+              key={view.entry.id}
+              view={view}
+              healthy={health[view.entry.id]}
+              launching={launching === view.entry.id}
+              actions={actions}
+            />
+          ))}
         </div>
       )}
 

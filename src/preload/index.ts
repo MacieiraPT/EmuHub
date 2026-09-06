@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IpcChannel, IpcEvent, type NotifyPayload } from '@shared/ipc'
 import type {
   AddConsoleInput,
+  BackupExportResult,
+  BackupImportResult,
   BulkAddResult,
   AppInfo,
   AppSettings,
@@ -61,6 +63,12 @@ const api = {
     clear: () => invoke<boolean>(IpcChannel.libraryClear),
     launch: (id: string) => invoke<LaunchResult>(IpcChannel.libraryLaunch, id),
     checkEmulators: () => invoke<Record<string, boolean>>(IpcChannel.libraryCheckEmulators)
+  },
+  backup: {
+    /** Writes library and preferences to a file the user picks. Null if cancelled. */
+    export: () => invoke<BackupExportResult | null>(IpcChannel.backupExport),
+    /** Restores a backup the user picks. Null if cancelled. */
+    import: () => invoke<BackupImportResult | null>(IpcChannel.backupImport)
   },
   settings: {
     get: () => invoke<AppSettings>(IpcChannel.settingsGet),

@@ -25,6 +25,9 @@ location of programs you already have and starts them for you.
   in plain language and offers to locate it again.
 - **Persistent configuration** — everything is stored in a versioned JSON
   document written atomically, with an automatic backup and corruption recovery.
+- **Backup and restore** — export your consoles, emulator paths and preferences
+  to a single file, and read it back on this PC or another one. Restoring can
+  either replace your library or merge into it.
 
 ## Getting started
 
@@ -79,8 +82,8 @@ src/
 └── renderer/src/            The interface
     ├── components/          Reusable UI: buttons, dialogs, menus, cards…
     │   └── artwork/         One hardware illustration per console
-    ├── features/            Onboarding, home, consoles, detail, settings
-    ├── router/              A four-route hash router
+    ├── features/            Onboarding, consoles, detail, settings
+    ├── router/              A three-route hash router
     ├── state/               Library, settings and notification stores
     ├── hooks/, lib/         Appearance, shortcuts, formatting, API helpers
     └── styles/              Design tokens, base styles, component styles
@@ -142,6 +145,9 @@ reshaping what is stored today.
 - Configuration lives in the platform's standard per-user application data
   folder (`%APPDATA%/EmuHub` on Windows) as `library.json` and `settings.json`.
   Settings → About → *Open configuration folder* reveals it.
+- Settings → *Backup & restore* writes that same configuration to a file you
+  pick and reads it back. A restore only ever changes EmuHub's own library and
+  preferences; no emulator or game file is read, written or removed.
 - Writes go to a temporary file and are renamed into place, so an interrupted
   save cannot truncate your configuration. The previous version is kept as
   `.bak`, and a file that cannot be parsed is preserved as `.corrupt-<date>`
@@ -184,7 +190,7 @@ What keeps it there:
 - **No per-frame blur.** Backdrop filters are limited to the modal scrim, where
   one exists briefly, instead of sitting behind every card badge and the
   sidebar.
-- **A four-route hash router** in place of a general-purpose routing library,
+- **A three-route hash router** in place of a general-purpose routing library,
   which cost about a tenth of the bundle for a window with no URL bar.
 
 ## Keyboard
