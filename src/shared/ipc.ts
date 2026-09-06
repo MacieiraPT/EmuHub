@@ -27,6 +27,14 @@ export const IpcChannel = {
   settingsResetOnboarding: 'settings:reset-onboarding',
   settingsCompleteOnboarding: 'settings:complete-onboarding',
 
+  updatesGetState: 'updates:get-state',
+  updatesCheck: 'updates:check',
+  updatesDownload: 'updates:download',
+  updatesCancel: 'updates:cancel',
+  updatesInstall: 'updates:install',
+  updatesReveal: 'updates:reveal',
+  updatesOpenReleasePage: 'updates:open-release-page',
+
   dialogPickExecutable: 'dialog:pick-executable',
   dialogConfirm: 'dialog:confirm',
   fsInspectExecutable: 'fs:inspect-executable',
@@ -47,7 +55,8 @@ export const IpcEvent = {
   settingsChanged: 'event:settings-changed',
   systemThemeChanged: 'event:system-theme',
   navigate: 'event:navigate',
-  notify: 'event:notify'
+  notify: 'event:notify',
+  updateStateChanged: 'event:update-state'
 } as const
 
 export type IpcEventName = (typeof IpcEvent)[keyof typeof IpcEvent]

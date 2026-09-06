@@ -12,6 +12,7 @@ import { OnboardingFlow } from './features/onboarding/OnboardingFlow'
 import { MyEmulatorsPage } from './features/consoles/MyEmulatorsPage'
 import { ConsoleDetailPage } from './features/detail/ConsoleDetailPage'
 import { SettingsPage } from './features/settings/SettingsPage'
+import { UpdateDialog } from './features/updates/UpdateDialog'
 
 export function App() {
   const { settings, loading } = useSettings()
@@ -50,6 +51,8 @@ export function App() {
         <Sidebar />
         <MainRoutes />
       </div>
+      {/* Onboarding is left alone: an update is offered once someone is set up. */}
+      <UpdateDialog />
       <Toasts />
     </div>
   )

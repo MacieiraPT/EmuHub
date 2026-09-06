@@ -49,6 +49,27 @@ Channel names live only in `src/shared/ipc.ts`. Adding a call means touching tha
 
 Each repository supplies a `migrate(raw: unknown) => T | null` that **repairs** a document rather than rejecting it — missing ids are generated, invalid enum values fall back to defaults, unknown fields are dropped. This is what lets configuration written by an older build survive an update. When the persisted shape changes, bump the schema version in `src/shared/defaults.ts` and extend the migrate function; do not assume the file on disk matches the current type.
 
+### Updates
+
+EmuHub checks its own GitHub releases page at startup and prompts before
+downloading anything. There is deliberately **no `electron-updater`** — the
+project ships no runtime dependencies, and the published releases carry neither
+`latest.yml` nor a version tag (the version lives in the release *title*), which
+is what `src/shared/updates.ts` parses.
+
+The flow is owned by `UpdateController` in the main process, not the renderer:
+it holds one `UpdateState`, broadcasts it on `IpcEvent.updateStateChanged`, and
+the interface only renders it. That is what lets a download survive the renderer
+reloading. `src/main/services/updater.ts` does the network and disk work;
+`src/shared/updates.ts` holds the pure parts (version comparison, asset
+matching) and must stay free of Node and DOM APIs.
+
+Constraints worth keeping: every URL, redirects included, is checked against
+`UPDATE_ALLOWED_HOSTS` before it is fetched; a download lands in a `.part` file
+and is only renamed once its published SHA-256 matches; and an installer is
+started only from EmuHub's own updates folder, with an argument vector and no
+shell.
+
 ### Security constraints (do not regress these)
 
 - **Emulators are launched with an argument vector, never a shell** (`spawn(path, args, { shell: false, detached: true })`). Configured paths are untrusted input: `src/main/services/executables.ts` normalises and validates before anything touches them.

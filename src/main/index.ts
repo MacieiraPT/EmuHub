@@ -5,10 +5,14 @@ import { LibraryRepository } from './services/libraryRepository'
 import { SettingsRepository } from './services/settingsRepository'
 import { WindowManager } from './window'
 import { TrayController } from './tray'
+import { UpdateController, updateDownloadDirectory } from './services/updateController'
 import { installApplicationMenu } from './menu'
 import { applySideEffects, registerIpcHandlers } from './ipc/register'
 
 app.setAppUserModelId('com.emuhub.app')
+
+/** Lets the window paint and settle before the update check touches the network. */
+const STARTUP_UPDATE_CHECK_DELAY_MS = 2500
 
 // A launcher must be a single instance: a second start focuses the open window.
 if (!app.requestSingleInstanceLock()) {
@@ -40,6 +44,13 @@ async function start(): Promise<void> {
 
   const windows = new WindowManager(configDirectory)
   const tray = new TrayController(windows)
+  const updates = new UpdateController({
+    windows,
+    currentVersion: app.getVersion(),
+    directory: updateDownloadDirectory(configDirectory),
+    platform: process.platform,
+    arch: process.arch
+  })
 
   /** Settings the window and app lifecycle need to read synchronously. */
   const runtime = {
@@ -52,12 +63,13 @@ async function start(): Promise<void> {
     settings,
     windows,
     tray,
+    updates,
     storageHealth,
     runtime
   }
 
   registerIpcHandlers(context)
-  installApplicationMenu(windows)
+  installApplicationMenu(windows, updates)
   await applySideEffects(initial, context)
 
   const startHidden =
@@ -71,6 +83,16 @@ async function start(): Promise<void> {
     minimizeToTray: () => runtime.minimizeToTray
   })
 
+  // A download left behind by an earlier run is never reused: it is cleared
+  // before this one can look for an update.
+  await updates.pruneOldDownloads()
+
+  if (initial.general.checkForUpdates) {
+    // Deliberately after the window is up and deliberately not awaited, so a
+    // slow or unreachable network never delays someone opening their library.
+    setTimeout(() => void updates.check(), STARTUP_UPDATE_CHECK_DELAY_MS)
+  }
+
   nativeTheme.on('updated', () => {
     windows.send(IpcEvent.systemThemeChanged, nativeTheme.shouldUseDarkColors)
   })
@@ -81,6 +103,7 @@ async function start(): Promise<void> {
   app.on('before-quit', () => {
     windows.markQuitting()
     tray.dispose()
+    updates.dispose()
   })
 
   app.on('window-all-closed', () => {

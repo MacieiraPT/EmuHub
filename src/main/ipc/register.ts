@@ -15,6 +15,7 @@ import type {
   SetEmulatorInput,
   StorageHealth,
   UpdateConsoleInput,
+  UpdateState,
   WindowState
 } from '@shared/types'
 import { IpcChannel, IpcEvent } from '@shared/ipc'
@@ -27,6 +28,7 @@ import { inspectExecutable, isWindows } from '../services/executables'
 import { buildBackup, readBackup, suggestBackupFileName, writeBackup, type ParsedBackup } from '../services/backup'
 import { launchEmulator } from '../services/launcher'
 import { isAutoLaunchSupported, setAutoLaunch } from '../services/autoLaunch'
+import type { UpdateController } from '../services/updateController'
 import type { WindowManager } from '../window'
 import type { TrayController } from '../tray'
 
@@ -35,6 +37,7 @@ export interface IpcContext {
   settings: SettingsRepository
   windows: WindowManager
   tray: TrayController
+  updates: UpdateController
   storageHealth: StorageHealth
   /** Mutable flags the window and app lifecycle read synchronously. */
   runtime: { closeToTray: boolean; minimizeToTray: boolean }
@@ -279,6 +282,18 @@ export function registerIpcHandlers(context: IpcContext): void {
     windows.send(IpcEvent.settingsChanged, next)
     return next
   })
+
+  /* ---------------------------------------------- updates ---------- */
+
+  const { updates } = context
+
+  handle<UpdateState>(IpcChannel.updatesGetState, () => updates.getState())
+  handle<UpdateState>(IpcChannel.updatesCheck, () => updates.check())
+  handle<UpdateState>(IpcChannel.updatesDownload, () => updates.download())
+  handle<UpdateState>(IpcChannel.updatesCancel, () => updates.cancel())
+  handle<boolean>(IpcChannel.updatesInstall, () => updates.install())
+  handle<boolean>(IpcChannel.updatesReveal, () => updates.reveal())
+  handle<boolean>(IpcChannel.updatesOpenReleasePage, () => updates.openReleasePage())
 
   /* ------------------------------------- dialogs & file system ----- */
 
