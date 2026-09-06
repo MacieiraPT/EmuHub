@@ -1,5 +1,5 @@
 import type { ConsoleDefinition, ExecutableInfo } from '@shared/types'
-import { ConsoleArt } from '../../components/ConsoleArt'
+import { ConsoleArt } from '../../components/artwork/ConsoleArt'
 import { EmulatorPathField } from '../../components/EmulatorPathField'
 import { generationLabel } from '../../lib/format'
 

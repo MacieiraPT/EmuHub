@@ -24,8 +24,10 @@ async function start(): Promise<void> {
   const settings = new SettingsRepository(configDirectory)
   const library = new LibraryRepository(configDirectory)
 
-  const settingsOutcome = await settings.load().catch(() => null)
-  const libraryOutcome = await library.load().catch(() => null)
+  const [settingsOutcome, libraryOutcome] = await Promise.all([
+    settings.load().catch(() => null),
+    library.load().catch(() => null)
+  ])
 
   const storageHealth: StorageHealth = {
     settingsRecovered: settingsOutcome?.recovered ?? true,

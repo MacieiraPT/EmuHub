@@ -10,6 +10,7 @@ export const IpcChannel = {
 
   libraryList: 'library:list',
   libraryAdd: 'library:add',
+  libraryAddMany: 'library:add-many',
   libraryUpdate: 'library:update',
   libraryRemove: 'library:remove',
   libraryClear: 'library:clear',

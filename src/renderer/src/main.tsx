@@ -1,6 +1,6 @@
 import { StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { HashRouter } from 'react-router-dom'
+import { Router } from './router'
 import { App } from './App'
 import { SettingsProvider, useSettings } from './state/SettingsContext'
 import { LibraryProvider } from './state/LibraryContext'
@@ -23,9 +23,9 @@ createRoot(container).render(
     <SettingsProvider>
       <ToastProvider>
         <LibraryGate>
-          <HashRouter>
+          <Router>
             <App />
-          </HashRouter>
+          </Router>
         </LibraryGate>
       </ToastProvider>
     </SettingsProvider>

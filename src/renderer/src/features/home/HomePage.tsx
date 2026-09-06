@@ -16,7 +16,7 @@ import { useSearchShortcut } from '../../hooks/useSearchShortcut'
 export function HomePage() {
   const { entries, health, loading, launching } = useLibrary()
   const { settings } = useSettings()
-  const { open, launch, relocateEmulator, removeConsole, reveal } = useConsoleActions()
+  const actions = useConsoleActions()
   const [query, setQuery] = useState('')
   const [adding, setAdding] = useState(false)
   const searchRef = useSearchShortcut()
@@ -119,11 +119,7 @@ export function HomePage() {
               view={view}
               healthy={health[view.entry.id]}
               launching={launching === view.entry.id}
-              onOpen={() => open(view.entry.id)}
-              onLaunch={() => void launch(view.entry.id)}
-              onChangeEmulator={() => void relocateEmulator(view.entry.id)}
-              onReveal={() => void reveal(view.emulator?.executablePath)}
-              onRemove={() => void removeConsole(view.entry.id)}
+              actions={actions}
             />
           ))}
           <button type="button" className="add-card" onClick={() => setAdding(true)}>

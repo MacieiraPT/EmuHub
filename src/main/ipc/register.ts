@@ -2,6 +2,7 @@ import { BrowserWindow, dialog, ipcMain, nativeTheme, shell, app } from 'electro
 import path from 'node:path'
 import type {
   AddConsoleInput,
+  BulkAddResult,
   AppInfo,
   AppSettings,
   ConfiguredConsole,
@@ -75,6 +76,12 @@ export function registerIpcHandlers(context: IpcContext): void {
     const entry = await library.add(input as AddConsoleInput)
     notifyLibraryChanged(windows)
     return entry
+  })
+
+  handle<BulkAddResult>(IpcChannel.libraryAddMany, async (inputs) => {
+    const result = await library.addMany(Array.isArray(inputs) ? (inputs as AddConsoleInput[]) : [])
+    if (result.added.length > 0) notifyLibraryChanged(windows)
+    return result
   })
 
   handle<ConfiguredConsole>(IpcChannel.libraryUpdate, async (input) => {

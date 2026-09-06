@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from '../../router'
 import { useLibrary, useLibraryEntry } from '../../state/LibraryContext'
-import { useConsoleActions } from '../consoles/useConsoleActions'
 import { bridge, describeError, unwrap } from '../../lib/api'
 import { useToast } from '../../state/ToastContext'
-import { ConsoleArt } from '../../components/ConsoleArt'
+import { ConsoleArt } from '../../components/artwork/ConsoleArt'
 import { EmulatorPathField } from '../../components/EmulatorPathField'
 import { Button, IconButton } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
@@ -23,12 +22,12 @@ import {
 import { formatDate, formatRelative, generationLabel, shortenPath } from '../../lib/format'
 
 export function ConsoleDetailPage() {
-  const { entryId } = useParams<{ entryId: string }>()
+  const { entryId } = useParams()
   const navigate = useNavigate()
   const { notify } = useToast()
-  const { health, launching, loading, refresh } = useLibrary()
+  const { health, launching, loading, refresh, launch, relocateEmulator, removeConsole } = useLibrary()
   const view = useLibraryEntry(entryId)
-  const { launch, relocateEmulator, removeConsole, reveal } = useConsoleActions()
+
   const [editing, setEditing] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
 
@@ -70,6 +69,14 @@ export function ConsoleDetailPage() {
       setEditing(false)
     } catch (error) {
       notify({ tone: 'error', title: 'Could not rename this console', ...describeError(error) })
+    }
+  }
+
+  const revealEmulator = async (executablePath: string): Promise<void> => {
+    try {
+      await unwrap(bridge.files.reveal(executablePath))
+    } catch (error) {
+      notify({ tone: 'warning', title: 'Could not open that folder', ...describeError(error) })
     }
   }
 
@@ -210,7 +217,7 @@ export function ConsoleDetailPage() {
           )}
           {emulator ? (
             <div className="panel__footer">
-              <Button variant="ghost" size="sm" icon={<FolderIcon size={14} />} onClick={() => void reveal(emulator.executablePath)}>
+              <Button variant="ghost" size="sm" icon={<FolderIcon size={14} />} onClick={() => void revealEmulator(emulator.executablePath)}>
                 Show in folder
               </Button>
             </div>

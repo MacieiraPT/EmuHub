@@ -10,28 +10,18 @@
 export type ConsoleFormFactor = 'home' | 'handheld' | 'hybrid' | 'computer' | 'arcade'
 export type ConsoleMedia = 'cartridge' | 'disc' | 'card' | 'tape' | 'digital' | 'mixed'
 
-/** Visual identity used to render generated (non-copyrighted) console artwork. */
+/**
+ * Palette for a console's generated artwork. The illustration itself lives in
+ * `renderer/components/artwork/glyphs.tsx`, keyed by console id.
+ */
 export interface ConsoleArtwork {
   /** Gradient start colour. */
   from: string
   /** Gradient end colour. */
   to: string
-  /** Foreground colour used for the generated glyph. */
+  /** Foreground colour the console's illustration is drawn in. */
   ink: string
-  /** Glyph shape family drawn by the artwork component. */
-  glyph: ConsoleGlyph
 }
-
-export type ConsoleGlyph =
-  | 'cartridge'
-  | 'disc'
-  | 'handheld'
-  | 'dual-screen'
-  | 'gamepad'
-  | 'tower'
-  | 'keyboard'
-  | 'arcade'
-  | 'card'
 
 /** A console the application knows about. Pure metadata, never user state. */
 export interface ConsoleDefinition {
@@ -189,6 +179,12 @@ export interface AddConsoleInput {
   executablePath?: string | null
   emulatorName?: string | null
   displayName?: string | null
+}
+
+export interface BulkAddResult {
+  added: ConfiguredConsole[]
+  /** Consoles that could not be added, each with a message safe to display. */
+  rejected: { consoleId: string; reason: string }[]
 }
 
 export interface UpdateConsoleInput {

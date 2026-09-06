@@ -5,7 +5,7 @@ import { deriveEmulatorName } from '@shared/library'
 import { useLibrary } from '../../state/LibraryContext'
 import { useSettings } from '../../state/SettingsContext'
 import { useToast } from '../../state/ToastContext'
-import { bridge, describeError, unwrap } from '../../lib/api'
+import { describeError } from '../../lib/api'
 import { Button } from '../../components/ui/Button'
 import { ChevronLeftIcon, ChevronRightIcon } from '../../components/icons'
 import { WelcomeStep } from './WelcomeStep'
@@ -28,7 +28,7 @@ const STEP_LABELS: { id: Step; label: string }[] = [
  */
 export function OnboardingFlow() {
   const { completeOnboarding } = useSettings()
-  const { configuredConsoleIds, refresh } = useLibrary()
+  const { addConsoles, configuredConsoleIds, refresh } = useLibrary()
   const { notify } = useToast()
 
   const [step, setStep] = useState<Step>('welcome')
@@ -79,36 +79,28 @@ export function OnboardingFlow() {
 
   const saveAndFinish = async (): Promise<void> => {
     setSaving(true)
-    let failures = 0
-
-    for (const consoleId of selectedIds) {
-      const assignment = assignments[consoleId]
-      try {
-        await unwrap(
-          bridge.library.add({
-            consoleId,
-            executablePath: assignment?.path ?? null,
-            emulatorName: assignment?.name ?? null
-          })
-        )
-      } catch (error) {
-        failures += 1
-        notify({
-          tone: 'warning',
-          title: `${getConsoleDefinition(consoleId)?.name ?? 'A console'} could not be saved`,
-          ...describeError(error)
-        })
-      }
-    }
-
     try {
-      await completeOnboarding()
+      // One call, one write, one change notification — however many consoles
+      // the user picked during setup.
+      const result = await addConsoles(
+        selectedIds.map((consoleId) => ({
+          consoleId,
+          executablePath: assignments[consoleId]?.path ?? null,
+          emulatorName: assignments[consoleId]?.name ?? null
+        }))
+      )
+
+      // Load the library before marking setup complete: finishing swaps the
+      // onboarding panel for the main window, and the home page should already
+      // have the consoles rather than flashing its empty state first.
       await refresh()
-      if (failures === 0 && selectedIds.length > 0) {
+      await completeOnboarding()
+
+      if (result && result.added.length > 0) {
         notify({
           tone: 'success',
           title: 'Your library is ready',
-          description: `${selectedIds.length} console${selectedIds.length === 1 ? '' : 's'} added.`
+          description: `${result.added.length} console${result.added.length === 1 ? '' : 's'} added.`
         })
       }
     } catch (error) {

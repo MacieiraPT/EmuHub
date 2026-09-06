@@ -124,8 +124,7 @@
   gap: var(--space-4);
   padding: var(--space-4) var(--space-3) var(--space-4);
   border-right: 1px solid var(--border);
-  background: color-mix(in srgb, var(--chrome) 72%, transparent);
-  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--chrome) 86%, transparent);
 }
 
 .sidebar__brand {
@@ -885,6 +884,8 @@
 }
 
 .console-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -914,6 +915,16 @@
   overflow: hidden;
 }
 
+/* The shared artwork definitions. Kept in the layout (rather than
+   display:none) so cross-SVG url(#id) references stay resolvable. */
+.console-art-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .console-art {
   display: block;
   width: 100%;
@@ -940,8 +951,7 @@
   font-weight: 560;
   letter-spacing: 0.02em;
   color: #fff;
-  background: rgba(10, 11, 16, 0.42);
-  backdrop-filter: blur(8px);
+  background: rgba(10, 11, 16, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-pill);
   padding: 2px 9px;
@@ -1089,6 +1099,8 @@
 }
 
 .console-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 66px;
   border-top: 1px solid var(--border);
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-out);
@@ -1229,6 +1241,8 @@
 }
 
 .console-tile {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 56px;
   position: relative;
   display: flex;
   align-items: center;

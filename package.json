@@ -20,7 +20,6 @@
     "dist:linux": "npm run build && electron-builder --linux",
     "dist:mac": "npm run build && electron-builder --mac"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/react": "^19.2.0",
@@ -31,7 +30,6 @@
     "electron-vite": "^5.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.18.3",
     "typescript": "^5.9.3",
     "vite": "^7.3.6"
   }
