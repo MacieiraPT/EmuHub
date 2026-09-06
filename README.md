@@ -28,6 +28,9 @@ location of programs you already have and starts them for you.
 - **Backup and restore** — export your consoles, emulator paths and preferences
   to a single file, and read it back on this PC or another one. Restoring can
   either replace your library or merge into it.
+- **Update checks that ask first** — on startup EmuHub compares its version
+  against its own releases page and, if there is a newer one, says so and waits.
+  Nothing is downloaded until you say yes, and the check can be turned off.
 
 ## Getting started
 
@@ -61,6 +64,7 @@ src/
 │   ├── ipc.ts               Channel names — the single source of truth
 │   ├── defaults.ts          Default settings and schema versions
 │   ├── library.ts           Pure helpers: sorting, search, name derivation
+│   ├── updates.ts           Version comparison and release asset matching
 │   └── data/consoles.ts     The console catalog
 │
 ├── main/                    Privileged process
@@ -75,6 +79,8 @@ src/
 │       ├── settingsRepository.ts   Settings + validation
 │       ├── executables.ts   Path validation and inspection
 │       ├── launcher.ts      Detached process launching
+│       ├── updater.ts       Release lookup, verified download, installer start
+│       ├── updateController.ts     Update state the whole app reads
 │       └── autoLaunch.ts    Start-with-system support
 │
 ├── preload/index.ts         The only bridge the interface can reach
@@ -130,6 +136,35 @@ same way, by `scripts/generate-icons.mjs`.
 Every definition lives in one hidden SVG mounted once at the application root,
 so a library of cards and a picker of fifty-five tiles share a single set of
 gradients, masks and filters instead of each instance building its own.
+
+### Updating
+
+EmuHub checks its own GitHub releases page a couple of seconds after the window
+opens, so a slow or unreachable network never delays your library. It reads the
+newest release, takes the version from its tag — falling back to the release
+title, which is where this project puts it — and compares it to the running
+build. Nothing happens unless that version is genuinely newer.
+
+When it is, EmuHub says so and stops. The download only starts if you ask for
+it, and then:
+
+- the file is chosen by platform and architecture, so a release with several
+  builds hands each machine its own, and a release with nothing for yours sends
+  you to the page instead of downloading something that cannot run;
+- every request is HTTPS to a GitHub host, redirects included — one that points
+  anywhere else is refused rather than followed;
+- the download is written to a `.part` file inside EmuHub's own configuration
+  folder and only given its real name once it is complete and its published
+  SHA-256 matches, so a truncated or altered file is never left where it could
+  be run;
+- an installer is started with an argument vector and never a shell, and only
+  from that folder — the same rule emulators are launched under. A release that
+  is an archive rather than an installer is shown to you in your file manager
+  instead.
+
+There is no update server and no telemetry: the only request is an anonymous
+GET to the public releases API, and turning the check off in Settings stops even
+that.
 
 ### Room to grow
 

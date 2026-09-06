@@ -2136,6 +2136,126 @@
 }
 
 /* =========================================================================
+   Update prompt
+   ========================================================================= */
+
+.update {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.update__lede {
+  font-size: var(--text-base);
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+.update__facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+}
+
+.update__facts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.update__facts dt {
+  font-size: var(--text-sm);
+  color: var(--text-subtle);
+  flex: none;
+}
+
+.update__facts dd {
+  margin: 0;
+  text-align: end;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.update__version {
+  color: var(--accent-text);
+  font-weight: 620;
+}
+
+.update__notes-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+
+.update__notes-title {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-subtle);
+  font-weight: 600;
+}
+
+/* Release notes arrive as text written by a person, so their own line breaks
+   are kept rather than reflowed, and a long set scrolls inside the dialog. */
+.update__notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.update__progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.update__progress-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.update__progress-count {
+  color: var(--accent-text);
+  font-weight: 560;
+  font-variant-numeric: tabular-nums;
+}
+
+/* No total to count against: the bar pulses rather than filling. Both ends of
+   the animation are opaque, so it still reads correctly with motion reduced. */
+.update__bar--indeterminate span {
+  animation: update-pulse 1.5s var(--ease-out) infinite;
+  transition: none;
+}
+
+@keyframes update-pulse {
+  0%,
+  100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* The settings row carries the same bar under its description. */
+.setting-row__text .update__progress {
+  margin-top: var(--space-2);
+  max-width: 320px;
+}
+
+/* =========================================================================
    Settings
    ========================================================================= */
 

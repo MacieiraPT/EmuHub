@@ -14,6 +14,7 @@ import type {
   SetEmulatorInput,
   StorageHealth,
   UpdateConsoleInput,
+  UpdateState,
   WindowState
 } from '@shared/types'
 
@@ -77,6 +78,20 @@ const api = {
     resetOnboarding: () => invoke<AppSettings>(IpcChannel.settingsResetOnboarding),
     completeOnboarding: () => invoke<AppSettings>(IpcChannel.settingsCompleteOnboarding)
   },
+  updates: {
+    /** The update flow as the main process currently sees it. */
+    state: () => invoke<UpdateState>(IpcChannel.updatesGetState),
+    /** Looks for a newer release now. */
+    check: () => invoke<UpdateState>(IpcChannel.updatesCheck),
+    /** Downloads the release found by the last check. */
+    download: () => invoke<UpdateState>(IpcChannel.updatesDownload),
+    cancel: () => invoke<UpdateState>(IpcChannel.updatesCancel),
+    /** Starts the downloaded installer and closes EmuHub. */
+    install: () => invoke<boolean>(IpcChannel.updatesInstall),
+    /** Shows the downloaded file in the file manager. */
+    reveal: () => invoke<boolean>(IpcChannel.updatesReveal),
+    openReleasePage: () => invoke<boolean>(IpcChannel.updatesOpenReleasePage)
+  },
   files: {
     pickExecutable: (options?: PickExecutableOptions) =>
       invoke<ExecutableInfo | null>(IpcChannel.dialogPickExecutable, options ?? {}),
@@ -96,7 +111,8 @@ const api = {
     onSettingsChanged: (listener: (settings: AppSettings) => void) => subscribe(IpcEvent.settingsChanged, listener),
     onSystemTheme: (listener: (dark: boolean) => void) => subscribe(IpcEvent.systemThemeChanged, listener),
     onNavigate: (listener: (route: string) => void) => subscribe(IpcEvent.navigate, listener),
-    onNotify: (listener: (payload: NotifyPayload) => void) => subscribe(IpcEvent.notify, listener)
+    onNotify: (listener: (payload: NotifyPayload) => void) => subscribe(IpcEvent.notify, listener),
+    onUpdateState: (listener: (state: UpdateState) => void) => subscribe(IpcEvent.updateStateChanged, listener)
   },
   platform: process.platform,
   /** True when the interface must draw its own window controls. */

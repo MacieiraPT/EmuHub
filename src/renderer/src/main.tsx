@@ -5,6 +5,7 @@ import { App } from './App'
 import { SettingsProvider, useSettings } from './state/SettingsContext'
 import { LibraryProvider } from './state/LibraryContext'
 import { ToastProvider } from './state/ToastContext'
+import { UpdateProvider } from './state/UpdateContext'
 import './styles/theme.css'
 import './styles/base.css'
 import './styles/app.css'
@@ -22,11 +23,13 @@ createRoot(container).render(
   <StrictMode>
     <SettingsProvider>
       <ToastProvider>
-        <LibraryGate>
-          <Router>
-            <App />
-          </Router>
-        </LibraryGate>
+        <UpdateProvider>
+          <LibraryGate>
+            <Router>
+              <App />
+            </Router>
+          </LibraryGate>
+        </UpdateProvider>
       </ToastProvider>
     </SettingsProvider>
   </StrictMode>

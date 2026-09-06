@@ -2,7 +2,7 @@ import type { AppSettings, LibraryData, SettingsData } from './types'
 
 /** Bump when the persisted shape changes; migrations live in the store. */
 export const LIBRARY_SCHEMA_VERSION = 1
-export const SETTINGS_SCHEMA_VERSION = 1
+export const SETTINGS_SCHEMA_VERSION = 2
 
 /** Marker written into exported backups so a foreign file is rejected early. */
 export const BACKUP_FORMAT = 'emuhub-backup'
@@ -15,7 +15,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
     minimizeToTray: false,
     closeToTray: false,
     startMinimized: false,
-    confirmBeforeRemoving: true
+    confirmBeforeRemoving: true,
+    checkForUpdates: true
   },
   appearance: {
     theme: 'dark',

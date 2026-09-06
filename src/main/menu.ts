@@ -1,5 +1,6 @@
 import { Menu, app } from 'electron'
 import type { WindowManager } from './window'
+import type { UpdateController } from './services/updateController'
 import { IpcEvent } from '@shared/ipc'
 
 /**
@@ -7,7 +8,7 @@ import { IpcEvent } from '@shared/ipc'
  * every action, so no menu bar is installed there. macOS always needs an
  * application menu for standard system behaviour (Cmd+Q, Cmd+H, editing keys).
  */
-export function installApplicationMenu(windows: WindowManager): void {
+export function installApplicationMenu(windows: WindowManager, updates: UpdateController): void {
   if (process.platform !== 'darwin') {
     Menu.setApplicationMenu(null)
     return
@@ -18,6 +19,15 @@ export function installApplicationMenu(windows: WindowManager): void {
       label: app.name,
       submenu: [
         { role: 'about' },
+        {
+          // Settings carries the result, and the prompt opens by itself when
+          // there is something to install.
+          label: 'Check for Updates…',
+          click: () => {
+            void updates.check()
+            windows.send(IpcEvent.navigate, '/settings')
+          }
+        },
         { type: 'separator' },
         {
           label: 'Settings…',

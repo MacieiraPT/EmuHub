@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import type { AccentColor, AppInfo, CardSize, LibrarySort, ThemePreference } from '@shared/types'
+import type { AccentColor, AppInfo, CardSize, LibrarySort, ThemePreference, UpdateState } from '@shared/types'
 import { SORT_LABELS } from '@shared/library'
 import { useSettings } from '../../state/SettingsContext'
 import { useLibrary } from '../../state/LibraryContext'
 import { useToast } from '../../state/ToastContext'
+import { useUpdates } from '../../state/UpdateContext'
 import { bridge, describeError, unwrap } from '../../lib/api'
 import { PageHeader } from '../../components/PageHeader'
 import { Button } from '../../components/ui/Button'
@@ -20,7 +21,8 @@ import {
   TrashIcon,
   UploadIcon
 } from '../../components/icons'
-import { fileNameOf, pluralize } from '../../lib/format'
+import { DownloadProgress } from '../updates/DownloadProgress'
+import { fileNameOf, formatDateTime, pluralize } from '../../lib/format'
 
 const ACCENTS: { value: AccentColor; label: string }[] = [
   { value: 'violet', label: 'Violet' },
@@ -40,8 +42,10 @@ export function SettingsPage() {
   const { settings, update, resetDefaults, resetOnboarding } = useSettings()
   const { entries, clearAll } = useLibrary()
   const { notify } = useToast()
+  const updates = useUpdates()
   const [info, setInfo] = useState<AppInfo | null>(null)
   const [backupBusy, setBackupBusy] = useState<'export' | 'import' | null>(null)
+  const [checkingUpdate, setCheckingUpdate] = useState(false)
 
   useEffect(() => {
     void unwrap(bridge.app.info())
@@ -107,6 +111,36 @@ export function SettingsPage() {
       notify({ tone: 'error', title: 'Could not restore that backup', ...describeError(error) })
     } finally {
       setBackupBusy(null)
+    }
+  }
+
+  /**
+   * A check the user asked for reports back either way — unlike the quiet one
+   * at startup, being told nothing here would read as a broken button.
+   */
+  const checkForUpdates = async (): Promise<void> => {
+    setCheckingUpdate(true)
+    try {
+      const result = await updates.check()
+      if (result.stage === 'available' && result.release) {
+        updates.openPrompt()
+      } else if (result.stage === 'error' && result.error) {
+        notify({
+          tone: 'error',
+          title: 'Could not check for updates',
+          description: [result.error.message, result.error.hint].filter(Boolean).join(' ')
+        })
+      } else {
+        notify({
+          tone: 'success',
+          title: 'EmuHub is up to date',
+          description: `You are running ${result.currentVersion}.`
+        })
+      }
+    } catch (error) {
+      notify({ tone: 'error', title: 'Could not check for updates', ...describeError(error) })
+    } finally {
+      setCheckingUpdate(false)
     }
   }
 
@@ -260,6 +294,46 @@ export function SettingsPage() {
             checked={settings.library.showMissingWarnings}
             onChange={(value) => void patch({ library: { showMissingWarnings: value } })}
           />
+        </div>
+      </section>
+
+      <section className="panel">
+        <header className="panel__header">
+          <h2>Updates</h2>
+        </header>
+        <div className="settings-group">
+          <Toggle
+            label="Check for updates when EmuHub starts"
+            description="Looks at EmuHub’s releases page once at startup and asks before anything is downloaded."
+            checked={settings.general.checkForUpdates}
+            onChange={(value) => void patch({ general: { checkForUpdates: value } })}
+          />
+
+          <div className="setting-row">
+            <div className="setting-row__text">
+              <span className="setting-row__label">{updateStatusLabel(updates.state)}</span>
+              <span className="setting-row__description">
+                {updates.state.checkedAt
+                  ? `Last checked ${formatDateTime(updates.state.checkedAt)}.`
+                  : 'EmuHub has not looked for an update yet in this session.'}
+              </span>
+              {updates.state.stage === 'downloading' ? <DownloadProgress progress={updates.state.progress} /> : null}
+            </div>
+            {updates.state.release ? (
+              <Button variant="primary" icon={<DownloadIcon size={15} />} onClick={updates.openPrompt}>
+                {updates.state.stage === 'ready' ? 'Install update' : 'View update'}
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                icon={<RefreshIcon size={15} />}
+                loading={checkingUpdate}
+                onClick={() => void checkForUpdates()}
+              >
+                Check now
+              </Button>
+            )}
+          </div>
         </div>
       </section>
 
@@ -421,4 +495,25 @@ export function SettingsPage() {
       </section>
     </div>
   )
+}
+
+/** One line describing where the update flow stands, in the user's terms. */
+function updateStatusLabel(state: UpdateState): string {
+  switch (state.stage) {
+    case 'checking':
+      return 'Looking for a newer version…'
+    case 'available':
+      return `EmuHub ${state.release?.version ?? ''} is available`.trim()
+    case 'downloading':
+      return `Downloading EmuHub ${state.release?.version ?? ''}`.trim()
+    case 'ready':
+      return `EmuHub ${state.release?.version ?? ''} is ready to install`.trim()
+    case 'error':
+      // A release still on offer means the download failed, not the check.
+      return state.release ? 'The update could not be downloaded' : 'The last update check did not finish'
+    case 'up-to-date':
+      return 'EmuHub is up to date'
+    default:
+      return 'Check for a newer version'
+  }
 }

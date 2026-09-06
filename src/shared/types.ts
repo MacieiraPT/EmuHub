@@ -98,6 +98,8 @@ export interface GeneralSettings {
   closeToTray: boolean
   startMinimized: boolean
   confirmBeforeRemoving: boolean
+  /** Look for a newer EmuHub each time the application starts. */
+  checkForUpdates: boolean
 }
 
 export interface AppearanceSettings {
@@ -179,6 +181,71 @@ export interface BackupImportResult {
 }
 
 /* ------------------------------------------------------------------ */
+/* Updates                                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Where the update flow currently stands. The main process owns this state so
+ * a check or a download survives the interface reloading, and broadcasts it
+ * whenever it moves.
+ */
+export type UpdateStage =
+  | 'idle'
+  | 'checking'
+  | 'up-to-date'
+  | 'available'
+  | 'downloading'
+  | 'ready'
+  | 'error'
+
+/** The file of a release that belongs to this machine. */
+export interface UpdateAsset {
+  name: string
+  sizeBytes: number
+  /** True when EmuHub can start this file itself to install the update. */
+  installable: boolean
+}
+
+export interface UpdateRelease {
+  /** Normalised version, e.g. `1.0.1`. */
+  version: string
+  /** The release title as published. */
+  name: string
+  /** Release notes as written, plain text — never rendered as markup. */
+  notes: string
+  releaseUrl: string
+  publishedAt: string | null
+  /** Null when the release carries nothing for this platform. */
+  asset: UpdateAsset | null
+}
+
+export interface UpdateProgress {
+  receivedBytes: number
+  /** Null while the server has not said how large the download is. */
+  totalBytes: number | null
+  /** 0-100, or null while the total is unknown. */
+  percent: number | null
+}
+
+export interface UpdateDownload {
+  filePath: string
+  installable: boolean
+}
+
+export interface UpdateState {
+  stage: UpdateStage
+  /** The version running right now. */
+  currentVersion: string
+  /** The newer release, once one has been found. */
+  release: UpdateRelease | null
+  progress: UpdateProgress | null
+  download: UpdateDownload | null
+  /** Why the last check or download failed, in words safe to show. */
+  error: AppError | null
+  checkedAt: string | null
+}
+
+/* ------------------------------------------------------------------ */
 /* IPC payloads and results                                            */
 /* ------------------------------------------------------------------ */
 
@@ -192,6 +259,7 @@ export type AppErrorCode =
   | 'permission-denied'
   | 'launch-failed'
   | 'cancelled'
+  | 'network'
   | 'storage-failed'
   | 'duplicate'
   | 'unknown'
