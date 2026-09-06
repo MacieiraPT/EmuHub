@@ -1,0 +1,162 @@
+/*
+ * Design tokens.
+ *
+ * Every colour, radius, shadow and motion value used by the interface is
+ * declared here. Themes and accents only swap token values, so components never
+ * hard-code a colour.
+ */
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text', 'Segoe UI', Inter,
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Mono', 'SF Mono', ui-monospace, 'Roboto Mono', Consolas, monospace;
+
+  --text-xs: 11.5px;
+  --text-sm: 12.5px;
+  --text-base: 13.5px;
+  --text-md: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  --titlebar-height: 38px;
+  --sidebar-width: 232px;
+  --sidebar-width-collapsed: 68px;
+  --content-max: 1560px;
+
+  --duration-fast: 110ms;
+  --duration-base: 180ms;
+  --duration-slow: 260ms;
+  --ease-out: cubic-bezier(0.22, 0.68, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
+
+  --accent-h: 258;
+  --accent-s: 90%;
+}
+
+/* ---------------------------------------------------------------- dark -- */
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #101116;
+  --bg-gradient: radial-gradient(1200px 620px at 18% -8%, rgba(139, 109, 255, 0.13), transparent 62%),
+    radial-gradient(900px 520px at 100% 0%, rgba(72, 178, 255, 0.07), transparent 58%);
+  --chrome: #14151c;
+  --surface: #181a22;
+  --surface-raised: #1d2029;
+  --surface-hover: #22252f;
+  --surface-active: #272b36;
+  --surface-sunken: #101218;
+
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --border-focus: hsl(var(--accent-h) var(--accent-s) 74%);
+
+  --text: #f0f1f6;
+  --text-muted: #a3a8ba;
+  --text-subtle: #737a90;
+  --text-inverse: #12131a;
+
+  --accent: hsl(var(--accent-h) var(--accent-s) 72%);
+  --accent-hover: hsl(var(--accent-h) var(--accent-s) 78%);
+  --accent-press: hsl(var(--accent-h) var(--accent-s) 66%);
+  --accent-soft: hsl(var(--accent-h) var(--accent-s) 72% / 0.15);
+  --accent-soft-hover: hsl(var(--accent-h) var(--accent-s) 72% / 0.22);
+  --accent-text: hsl(var(--accent-h) calc(var(--accent-s) - 10%) 80%);
+  --on-accent: #14101f;
+
+  --success: #43d19e;
+  --success-soft: rgba(67, 209, 158, 0.14);
+  --warning: #f2b755;
+  --warning-soft: rgba(242, 183, 85, 0.14);
+  --danger: #f4707c;
+  --danger-hover: #f78a94;
+  --danger-soft: rgba(244, 112, 124, 0.14);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.34);
+  --shadow-md: 0 6px 20px -6px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 18px 44px -14px rgba(0, 0, 0, 0.68);
+  --shadow-glow: 0 10px 30px -12px hsl(var(--accent-h) var(--accent-s) 60% / 0.55);
+
+  --scrim: rgba(8, 9, 13, 0.62);
+  --art-overlay: linear-gradient(180deg, rgba(12, 13, 18, 0) 34%, rgba(12, 13, 18, 0.72) 100%);
+}
+
+/* --------------------------------------------------------------- light -- */
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f2f3f7;
+  --bg-gradient: radial-gradient(1100px 600px at 14% -10%, rgba(139, 109, 255, 0.14), transparent 60%),
+    radial-gradient(900px 520px at 100% 0%, rgba(72, 178, 255, 0.09), transparent 58%);
+  --chrome: #ffffff;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-hover: #f1f2f6;
+  --surface-active: #e8eaf0;
+  --surface-sunken: #eceef3;
+
+  --border: rgba(15, 18, 32, 0.09);
+  --border-strong: rgba(15, 18, 32, 0.16);
+  --border-focus: hsl(var(--accent-h) var(--accent-s) 52%);
+
+  --text: #14161f;
+  --text-muted: #575d70;
+  --text-subtle: #7c8296;
+  --text-inverse: #ffffff;
+
+  --accent: hsl(var(--accent-h) calc(var(--accent-s) - 8%) 56%);
+  --accent-hover: hsl(var(--accent-h) calc(var(--accent-s) - 8%) 50%);
+  --accent-press: hsl(var(--accent-h) calc(var(--accent-s) - 8%) 44%);
+  --accent-soft: hsl(var(--accent-h) var(--accent-s) 56% / 0.12);
+  --accent-soft-hover: hsl(var(--accent-h) var(--accent-s) 56% / 0.18);
+  --accent-text: hsl(var(--accent-h) calc(var(--accent-s) - 6%) 46%);
+  --on-accent: #ffffff;
+
+  --success: #12a06e;
+  --success-soft: rgba(18, 160, 110, 0.12);
+  --warning: #b57614;
+  --warning-soft: rgba(181, 118, 20, 0.12);
+  --danger: #d6394a;
+  --danger-hover: #c02c3c;
+  --danger-soft: rgba(214, 57, 74, 0.12);
+
+  --shadow-sm: 0 1px 2px rgba(20, 24, 40, 0.08);
+  --shadow-md: 0 8px 22px -10px rgba(20, 24, 40, 0.22);
+  --shadow-lg: 0 20px 46px -18px rgba(20, 24, 40, 0.3);
+  --shadow-glow: 0 12px 28px -14px hsl(var(--accent-h) var(--accent-s) 50% / 0.5);
+
+  --scrim: rgba(24, 27, 38, 0.34);
+  --art-overlay: linear-gradient(180deg, rgba(12, 13, 18, 0) 38%, rgba(12, 13, 18, 0.6) 100%);
+}
+
+/* Accent variants only move the hue/saturation pair. */
+[data-accent='violet'] { --accent-h: 258; --accent-s: 90%; }
+[data-accent='blue'] { --accent-h: 214; --accent-s: 92%; }
+[data-accent='emerald'] { --accent-h: 158; --accent-s: 68%; }
+[data-accent='amber'] { --accent-h: 36; --accent-s: 92%; }
+[data-accent='rose'] { --accent-h: 344; --accent-s: 82%; }
+[data-accent='cyan'] { --accent-h: 188; --accent-s: 78%; }
+
+/* Card density. */
+[data-card-size='compact'] { --card-min: 196px; }
+[data-card-size='comfortable'] { --card-min: 244px; }
+[data-card-size='large'] { --card-min: 310px; }

@@ -1,0 +1,54 @@
+appId: com.emuhub.app
+productName: EmuHub
+copyright: EmuHub
+
+directories:
+  buildResources: resources
+  output: release/${version}
+
+files:
+  - out/**
+  - package.json
+  - '!**/*.map'
+
+extraResources:
+  - from: resources
+    to: resources
+    filter:
+      - icon.png
+      - icon.ico
+      - tray.png
+      - tray@2x.png
+
+asar: true
+
+win:
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+  icon: resources/icon.ico
+  # EmuHub only reads paths the user picks and starts programs they already
+  # have, so it never needs elevated privileges.
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: EmuHub
+
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: resources/icon.png
+  category: Game
+  synopsis: Centralise and launch the console emulators installed on your PC
+
+mac:
+  target:
+    - dmg
+  icon: resources/icon.png
+  category: public.app-category.games
