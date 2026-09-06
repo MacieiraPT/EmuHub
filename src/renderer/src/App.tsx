@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Routes, useNavigate, usePath, type RouteDefinition } from './router'
 import { useSettings } from './state/SettingsContext'
 import { useToast } from './state/ToastContext'
 import { useAppearance } from './hooks/useAppearance'
@@ -7,6 +7,7 @@ import { bridge, unwrap } from './lib/api'
 import { BrandMark, TitleBar } from './components/TitleBar'
 import { Sidebar } from './components/Sidebar'
 import { Toasts } from './components/ui/Toasts'
+import { ConsoleArtSprite } from './components/artwork/ConsoleArt'
 import { OnboardingFlow } from './features/onboarding/OnboardingFlow'
 import { HomePage } from './features/home/HomePage'
 import { ConsolesPage } from './features/consoles/ConsolesPage'
@@ -34,6 +35,7 @@ export function App() {
   if (!settings.onboarding.completed) {
     return (
       <div className="app app--onboarding">
+        <ConsoleArtSprite />
         <TitleBar />
         <OnboardingFlow />
         <Toasts />
@@ -43,6 +45,7 @@ export function App() {
 
   return (
     <div className="app">
+      <ConsoleArtSprite />
       <TitleBar />
       <div className="app__body">
         <Sidebar />
@@ -53,20 +56,21 @@ export function App() {
   )
 }
 
+const ROUTES: RouteDefinition[] = [
+  { path: '/', element: <HomePage /> },
+  { path: '/consoles', element: <ConsolesPage /> },
+  { path: '/console/:entryId', element: <ConsoleDetailPage /> },
+  { path: '/settings', element: <SettingsPage /> }
+]
+
 function MainRoutes() {
-  const location = useLocation()
+  const path = usePath()
 
   return (
     <main className="app__main" id="main-content" tabIndex={-1}>
       {/* Keying on the path replays the enter transition on each section change. */}
-      <div className="view" key={location.pathname}>
-        <Routes location={location}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/consoles" element={<ConsolesPage />} />
-          <Route path="/console/:entryId" element={<ConsoleDetailPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+      <div className="view" key={path}>
+        <Routes routes={ROUTES} fallback={<HomePage />} />
       </div>
     </main>
   )

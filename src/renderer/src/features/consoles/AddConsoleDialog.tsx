@@ -3,8 +3,9 @@ import { getConsoleDefinition } from '@shared/data/consoles'
 import { deriveEmulatorName } from '@shared/library'
 import type { ExecutableInfo } from '@shared/types'
 import { useLibrary } from '../../state/LibraryContext'
+import { useToast } from '../../state/ToastContext'
 import { ConsolePicker } from '../../components/ConsolePicker'
-import { ConsoleArt } from '../../components/ConsoleArt'
+import { ConsoleArt } from '../../components/artwork/ConsoleArt'
 import { EmulatorPathField } from '../../components/EmulatorPathField'
 import { Dialog } from '../../components/ui/Dialog'
 import { Button } from '../../components/ui/Button'
@@ -23,7 +24,8 @@ interface AddConsoleDialogProps {
  * then point each one at its emulator — so the flow is familiar the second time.
  */
 export function AddConsoleDialog({ open, onClose, onAdded }: AddConsoleDialogProps) {
-  const { addConsole, configuredConsoleIds } = useLibrary()
+  const { addConsoles, configuredConsoleIds } = useLibrary()
+  const { notify } = useToast()
   const [phase, setPhase] = useState<'select' | 'configure'>('select')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [assignments, setAssignments] = useState<Record<string, { path: string; name: string }>>({})
@@ -57,18 +59,24 @@ export function AddConsoleDialog({ open, onClose, onAdded }: AddConsoleDialogPro
 
   const save = async (): Promise<void> => {
     setSaving(true)
-    const added: string[] = []
-    for (const consoleId of selectedIds) {
-      const assignment = assignments[consoleId]
-      const entry = await addConsole({
+    // One call, one write, one change notification — however many were picked.
+    const result = await addConsoles(
+      selectedIds.map((consoleId) => ({
         consoleId,
-        executablePath: assignment?.path ?? null,
-        emulatorName: assignment?.name ?? null
-      })
-      if (entry) added.push(entry.id)
-    }
+        executablePath: assignments[consoleId]?.path ?? null,
+        emulatorName: assignments[consoleId]?.name ?? null
+      }))
+    )
     setSaving(false)
-    onAdded?.(added)
+
+    if (result && result.added.length > 0) {
+      notify({
+        tone: 'success',
+        title: result.added.length === 1 ? 'Console added' : `${result.added.length} consoles added`,
+        description: 'They are ready in your library.'
+      })
+    }
+    onAdded?.(result?.added.map((entry) => entry.id) ?? [])
     onClose()
   }
 

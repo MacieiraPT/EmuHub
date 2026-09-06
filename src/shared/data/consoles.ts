@@ -3,9 +3,13 @@ import type { ConsoleDefinition } from '../types'
 /**
  * The console catalog.
  *
- * Adding a platform to EmuHub means adding one entry here — no UI, storage or
- * navigation code needs to change. Artwork is generated from the `artwork`
- * palette and glyph, so no third-party imagery ships with the application.
+ * Adding a platform means adding one entry here plus its illustration in
+ * `renderer/components/artwork/glyphs.tsx` — no UI, storage or navigation code
+ * changes. A console with no illustration yet falls back to a generic one.
+ *
+ * Only platforms with an emulator that actually runs commercial software are
+ * listed: EmuHub is a launcher, so offering a console nobody can emulate would
+ * only lead the user to a dead end.
  */
 export const CONSOLE_CATALOG: ConsoleDefinition[] = [
   /* ---------------------------------------------------------------- */
@@ -20,7 +24,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1983,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#8d8d94', to: '#c0392b', ink: '#f7f7f9', glyph: 'cartridge' },
+    artwork: { from: '#8d8d94', to: '#c0392b', ink: '#f7f7f9' },
     aliases: ['famicom', 'nes', 'family computer', '8-bit'],
     knownEmulators: ['Mesen', 'FCEUX', 'Nestopia', 'puNES', 'Nintaco']
   },
@@ -33,7 +37,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1990,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#5a4a9c', to: '#8f7ad6', ink: '#f5f3ff', glyph: 'cartridge' },
+    artwork: { from: '#5a4a9c', to: '#8f7ad6', ink: '#f5f3ff' },
     aliases: ['super famicom', 'snes', 'sfc', 'super nintendo', '16-bit'],
     knownEmulators: ['Snes9x', 'bsnes', 'Mesen-S', 'higan', 'RetroArch']
   },
@@ -46,7 +50,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1996,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#2f6d3f', to: '#57b45f', ink: '#f2fff4', glyph: 'cartridge' },
+    artwork: { from: '#2f6d3f', to: '#57b45f', ink: '#f2fff4' },
     aliases: ['n64', 'ultra 64', 'project reality'],
     knownEmulators: ['Project64', 'Mupen64Plus', 'simple64', 'ParaLLEl N64', 'Ares']
   },
@@ -59,7 +63,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2001,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#4b3f9e', to: '#7d6ce0', ink: '#f3f1ff', glyph: 'disc' },
+    artwork: { from: '#4b3f9e', to: '#7d6ce0', ink: '#f3f1ff' },
     aliases: ['gcn', 'ngc', 'gamecube', 'dolphin'],
     knownEmulators: ['Dolphin', 'Ishiiruka', 'RetroArch']
   },
@@ -72,7 +76,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2006,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#d7dde5', to: '#8fb6d8', ink: '#1d2733', glyph: 'disc' },
+    artwork: { from: '#d7dde5', to: '#8fb6d8', ink: '#1d2733' },
     aliases: ['wii', 'rvl'],
     knownEmulators: ['Dolphin', 'Ishiiruka']
   },
@@ -85,7 +89,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2012,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#2f7fd0', to: '#63b7f0', ink: '#f2faff', glyph: 'disc' },
+    artwork: { from: '#2f7fd0', to: '#63b7f0', ink: '#f2faff' },
     aliases: ['wiiu', 'wii u', 'cemu'],
     knownEmulators: ['Cemu', 'Decaf']
   },
@@ -98,9 +102,9 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2017,
     formFactor: 'hybrid',
     media: 'card',
-    artwork: { from: '#c62b34', to: '#f0575f', ink: '#fff4f5', glyph: 'gamepad' },
+    artwork: { from: '#c62b34', to: '#f0575f', ink: '#fff4f5' },
     aliases: ['switch', 'nx', 'joy-con'],
-    knownEmulators: ['Ryujinx', 'Sudachi', 'Yuzu']
+    knownEmulators: ['Ryubing', 'Eden', 'Citron', 'Ryujinx']
   },
   {
     id: 'nintendo-game-boy',
@@ -111,7 +115,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1989,
     formFactor: 'handheld',
     media: 'cartridge',
-    artwork: { from: '#7f8b6a', to: '#b6c48e', ink: '#1f2617', glyph: 'handheld' },
+    artwork: { from: '#7f8b6a', to: '#b6c48e', ink: '#1f2617' },
     aliases: ['gb', 'dmg', 'gameboy'],
     knownEmulators: ['SameBoy', 'mGBA', 'BGB', 'Gambatte', 'Emulicious']
   },
@@ -124,7 +128,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1998,
     formFactor: 'handheld',
     media: 'cartridge',
-    artwork: { from: '#8d51c9', to: '#4bc3d4', ink: '#f8f4ff', glyph: 'handheld' },
+    artwork: { from: '#8d51c9', to: '#4bc3d4', ink: '#f8f4ff' },
     aliases: ['gbc', 'gameboy color'],
     knownEmulators: ['SameBoy', 'mGBA', 'BGB', 'Gambatte']
   },
@@ -137,7 +141,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2001,
     formFactor: 'handheld',
     media: 'cartridge',
-    artwork: { from: '#3b3fa8', to: '#7a7fe8', ink: '#f2f3ff', glyph: 'handheld' },
+    artwork: { from: '#3b3fa8', to: '#7a7fe8', ink: '#f2f3ff' },
     aliases: ['gba', 'agb', 'gameboy advance', 'sp'],
     knownEmulators: ['mGBA', 'VisualBoyAdvance-M', 'NanoBoyAdvance', 'no$gba']
   },
@@ -150,7 +154,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2004,
     formFactor: 'handheld',
     media: 'cartridge',
-    artwork: { from: '#3c4d63', to: '#7f93ad', ink: '#f5f8fb', glyph: 'dual-screen' },
+    artwork: { from: '#3c4d63', to: '#7f93ad', ink: '#f5f8fb' },
     aliases: ['nds', 'ds lite', 'dsi', 'nintendo ds'],
     knownEmulators: ['melonDS', 'DeSmuME', 'no$gba']
   },
@@ -163,9 +167,9 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2011,
     formFactor: 'handheld',
     media: 'card',
-    artwork: { from: '#b32b45', to: '#f0687f', ink: '#fff3f5', glyph: 'dual-screen' },
+    artwork: { from: '#b32b45', to: '#f0687f', ink: '#fff3f5' },
     aliases: ['3ds', 'n3ds', 'new 3ds', 'ctr'],
-    knownEmulators: ['Azahar', 'Lime3DS', 'Citra', 'Panda3DS']
+    knownEmulators: ['Azahar', 'Panda3DS', 'Citra']
   },
   {
     id: 'nintendo-virtual-boy',
@@ -176,7 +180,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1995,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#8e1b1b', to: '#e0403f', ink: '#fff0f0', glyph: 'cartridge' },
+    artwork: { from: '#8e1b1b', to: '#e0403f', ink: '#fff0f0' },
     aliases: ['vb', 'virtualboy'],
     knownEmulators: ['Mednafen', 'RetroArch', 'Red Dragon']
   },
@@ -193,7 +197,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1994,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#4a4f57', to: '#9aa3ae', ink: '#f6f8fa', glyph: 'disc' },
+    artwork: { from: '#4a4f57', to: '#9aa3ae', ink: '#f6f8fa' },
     aliases: ['ps1', 'psx', 'psone', 'playstation 1'],
     knownEmulators: ['DuckStation', 'PCSX-Redux', 'Beetle PSX', 'ePSXe']
   },
@@ -206,7 +210,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2000,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#1b2a6b', to: '#4361c9', ink: '#eef2ff', glyph: 'disc' },
+    artwork: { from: '#1b2a6b', to: '#4361c9', ink: '#eef2ff' },
     aliases: ['ps2', 'playstation 2', 'pcsx2'],
     knownEmulators: ['PCSX2', 'Play!', 'AetherSX2']
   },
@@ -219,7 +223,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2006,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#141821', to: '#414b60', ink: '#eef1f7', glyph: 'disc' },
+    artwork: { from: '#141821', to: '#414b60', ink: '#eef1f7' },
     aliases: ['ps3', 'playstation 3', 'rpcs3'],
     knownEmulators: ['RPCS3']
   },
@@ -232,22 +236,9 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2013,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#12365e', to: '#2f76c4', ink: '#eff6ff', glyph: 'disc' },
+    artwork: { from: '#12365e', to: '#2f76c4', ink: '#eff6ff' },
     aliases: ['ps4', 'playstation 4', 'orbis'],
-    knownEmulators: ['shadPS4', 'fpPS4']
-  },
-  {
-    id: 'sony-playstation-5',
-    name: 'PlayStation 5',
-    shortName: 'PS5',
-    manufacturer: 'Sony',
-    generation: 9,
-    releaseYear: 2020,
-    formFactor: 'home',
-    media: 'disc',
-    artwork: { from: '#e8ecf3', to: '#8fa8c8', ink: '#16202e', glyph: 'tower' },
-    aliases: ['ps5', 'playstation 5'],
-    knownEmulators: []
+    knownEmulators: ['shadPS4']
   },
   {
     id: 'sony-psp',
@@ -258,7 +249,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2004,
     formFactor: 'handheld',
     media: 'disc',
-    artwork: { from: '#22262e', to: '#5c6577', ink: '#f2f4f8', glyph: 'handheld' },
+    artwork: { from: '#22262e', to: '#5c6577', ink: '#f2f4f8' },
     aliases: ['psp', 'playstation portable', 'umd'],
     knownEmulators: ['PPSSPP']
   },
@@ -271,7 +262,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2011,
     formFactor: 'handheld',
     media: 'card',
-    artwork: { from: '#1a1d24', to: '#3f7fd8', ink: '#eff5ff', glyph: 'handheld' },
+    artwork: { from: '#1a1d24', to: '#3f7fd8', ink: '#eff5ff' },
     aliases: ['vita', 'psvita', 'playstation vita'],
     knownEmulators: ['Vita3K']
   },
@@ -288,7 +279,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1985,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#1f2329', to: '#4b5563', ink: '#f4f6f8', glyph: 'cartridge' },
+    artwork: { from: '#1f2329', to: '#4b5563', ink: '#f4f6f8' },
     aliases: ['sms', 'master system', 'mark iii'],
     knownEmulators: ['Emulicious', 'Kega Fusion', 'BlastEm', 'RetroArch']
   },
@@ -301,7 +292,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1988,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#16181d', to: '#3d6bd4', ink: '#eef2ff', glyph: 'cartridge' },
+    artwork: { from: '#16181d', to: '#3d6bd4', ink: '#eef2ff' },
     aliases: ['mega drive', 'megadrive', 'genesis', 'md', 'sega 16-bit'],
     knownEmulators: ['BlastEm', 'Kega Fusion', 'Genesis Plus GX', 'Exodus']
   },
@@ -314,7 +305,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1991,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#1b1f27', to: '#7a5fd3', ink: '#f3f0ff', glyph: 'disc' },
+    artwork: { from: '#1b1f27', to: '#7a5fd3', ink: '#f3f0ff' },
     aliases: ['mega cd', 'segacd', 'sega cd'],
     knownEmulators: ['Kega Fusion', 'Genesis Plus GX', 'Ares']
   },
@@ -327,7 +318,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1994,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#20232a', to: '#c4472f', ink: '#fff2ef', glyph: 'cartridge' },
+    artwork: { from: '#20232a', to: '#c4472f', ink: '#fff2ef' },
     aliases: ['32x', 'mega drive 32x', 'mushroom'],
     knownEmulators: ['Kega Fusion', 'PicoDrive', 'Ares']
   },
@@ -340,7 +331,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1994,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#242833', to: '#5f6b8c', ink: '#f2f4fa', glyph: 'disc' },
+    artwork: { from: '#242833', to: '#5f6b8c', ink: '#f2f4fa' },
     aliases: ['saturn', 'ss'],
     knownEmulators: ['Mednafen', 'SSF', 'Kronos', 'Yabause']
   },
@@ -353,7 +344,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1998,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#e9eef3', to: '#e2643c', ink: '#20262d', glyph: 'disc' },
+    artwork: { from: '#e9eef3', to: '#e2643c', ink: '#20262d' },
     aliases: ['dc', 'dreamcast', 'gd-rom'],
     knownEmulators: ['Flycast', 'redream', 'DEmul']
   },
@@ -366,7 +357,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1990,
     formFactor: 'handheld',
     media: 'cartridge',
-    artwork: { from: '#1d2026', to: '#5b6270', ink: '#f4f6f9', glyph: 'handheld' },
+    artwork: { from: '#1d2026', to: '#5b6270', ink: '#f4f6f9' },
     aliases: ['gg', 'game gear'],
     knownEmulators: ['Emulicious', 'Kega Fusion', 'Genesis Plus GX']
   },
@@ -379,7 +370,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1983,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#2b2f36', to: '#b23a48', ink: '#fff1f3', glyph: 'cartridge' },
+    artwork: { from: '#2b2f36', to: '#b23a48', ink: '#fff1f3' },
     aliases: ['sg1000', 'sg-1000'],
     knownEmulators: ['Kega Fusion', 'BlueMSX', 'RetroArch']
   },
@@ -396,7 +387,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2001,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#14361d', to: '#3f9a4a', ink: '#f0fff2', glyph: 'disc' },
+    artwork: { from: '#14361d', to: '#3f9a4a', ink: '#f0fff2' },
     aliases: ['xbox', 'original xbox', 'xbox classic'],
     knownEmulators: ['xemu', 'Cxbx-Reloaded']
   },
@@ -409,35 +400,9 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 2005,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#e6ebe8', to: '#69b544', ink: '#1b2a1e', glyph: 'disc' },
+    artwork: { from: '#e6ebe8', to: '#69b544', ink: '#1b2a1e' },
     aliases: ['360', 'xbox360', 'xenon'],
-    knownEmulators: ['Xenia']
-  },
-  {
-    id: 'microsoft-xbox-one',
-    name: 'Xbox One',
-    shortName: 'Xbox One',
-    manufacturer: 'Microsoft',
-    generation: 8,
-    releaseYear: 2013,
-    formFactor: 'home',
-    media: 'disc',
-    artwork: { from: '#15181b', to: '#4c9a52', ink: '#f1fbf2', glyph: 'disc' },
-    aliases: ['xbone', 'xbox one', 'durango'],
-    knownEmulators: []
-  },
-  {
-    id: 'microsoft-xbox-series',
-    name: 'Xbox Series X|S',
-    shortName: 'Xbox Series',
-    manufacturer: 'Microsoft',
-    generation: 9,
-    releaseYear: 2020,
-    formFactor: 'home',
-    media: 'disc',
-    artwork: { from: '#101315', to: '#2f7d3b', ink: '#effaf0', glyph: 'tower' },
-    aliases: ['series x', 'series s', 'xbox series'],
-    knownEmulators: []
+    knownEmulators: ['Xenia', 'Xenia Canary']
   },
 
   /* ---------------------------------------------------------------- */
@@ -452,7 +417,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1977,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#5b3a1e', to: '#c98a3e', ink: '#fff8ee', glyph: 'cartridge' },
+    artwork: { from: '#5b3a1e', to: '#c98a3e', ink: '#fff8ee' },
     aliases: ['vcs', '2600', 'atari vcs'],
     knownEmulators: ['Stella', 'RetroArch', 'Gopher2600']
   },
@@ -465,7 +430,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1982,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#2a2622', to: '#8c6f4a', ink: '#fdf6ec', glyph: 'cartridge' },
+    artwork: { from: '#2a2622', to: '#8c6f4a', ink: '#fdf6ec' },
     aliases: ['5200', 'supersystem'],
     knownEmulators: ['Altirra', 'Atari800', 'RetroArch']
   },
@@ -478,7 +443,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1986,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#1f2a35', to: '#c0453a', ink: '#fff2f0', glyph: 'cartridge' },
+    artwork: { from: '#1f2a35', to: '#c0453a', ink: '#fff2f0' },
     aliases: ['7800', 'prosystem'],
     knownEmulators: ['A7800', 'ProSystem', 'RetroArch']
   },
@@ -491,7 +456,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1989,
     formFactor: 'handheld',
     media: 'cartridge',
-    artwork: { from: '#22262b', to: '#c8952f', ink: '#fff8e9', glyph: 'handheld' },
+    artwork: { from: '#22262b', to: '#c8952f', ink: '#fff8e9' },
     aliases: ['lynx', 'handy'],
     knownEmulators: ['Mednafen', 'Handy', 'RetroArch']
   },
@@ -504,7 +469,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1993,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#181b1f', to: '#b8332b', ink: '#fff1ef', glyph: 'cartridge' },
+    artwork: { from: '#181b1f', to: '#b8332b', ink: '#fff1ef' },
     aliases: ['jaguar', 'jag', 'jaguar cd'],
     knownEmulators: ['BigPEmu', 'Virtual Jaguar', 'Phoenix']
   },
@@ -517,7 +482,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1985,
     formFactor: 'computer',
     media: 'disc',
-    artwork: { from: '#3b3f46', to: '#9aa2ad', ink: '#f7f9fb', glyph: 'keyboard' },
+    artwork: { from: '#3b3f46', to: '#9aa2ad', ink: '#f7f9fb' },
     aliases: ['st', 'atari st', 'ste', 'falcon'],
     knownEmulators: ['Hatari', 'Steem SSE']
   },
@@ -534,7 +499,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1990,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#1a1c21', to: '#d8b23c', ink: '#fffaeb', glyph: 'cartridge' },
+    artwork: { from: '#1a1c21', to: '#d8b23c', ink: '#fffaeb' },
     aliases: ['neogeo', 'aes', 'neo-geo', 'neo geo'],
     knownEmulators: ['FinalBurn Neo', 'MAME', 'Kawaks']
   },
@@ -547,7 +512,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1990,
     formFactor: 'arcade',
     media: 'cartridge',
-    artwork: { from: '#201c17', to: '#c2582c', ink: '#fff3ec', glyph: 'arcade' },
+    artwork: { from: '#201c17', to: '#c2582c', ink: '#fff3ec' },
     aliases: ['mvs', 'multi video system', 'neo geo arcade'],
     knownEmulators: ['FinalBurn Neo', 'MAME']
   },
@@ -560,7 +525,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1998,
     formFactor: 'handheld',
     media: 'cartridge',
-    artwork: { from: '#1d2733', to: '#3f9fb5', ink: '#effbff', glyph: 'handheld' },
+    artwork: { from: '#1d2733', to: '#3f9fb5', ink: '#effbff' },
     aliases: ['ngp', 'ngpc', 'neo geo pocket'],
     knownEmulators: ['Mednafen', 'RetroArch', 'NeoPop']
   },
@@ -573,7 +538,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1987,
     formFactor: 'home',
     media: 'card',
-    artwork: { from: '#22242a', to: '#d0562f', ink: '#fff3ee', glyph: 'card' },
+    artwork: { from: '#22242a', to: '#d0562f', ink: '#fff3ee' },
     aliases: ['pc engine', 'pce', 'tg16', 'turbografx', 'hucard'],
     knownEmulators: ['Mednafen', 'Beetle PCE', 'Ootake']
   },
@@ -586,7 +551,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1988,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#23262d', to: '#6f7fd6', ink: '#f1f3ff', glyph: 'disc' },
+    artwork: { from: '#23262d', to: '#6f7fd6', ink: '#f1f3ff' },
     aliases: ['turbo cd', 'super cd-rom', 'pce cd', 'turboduo'],
     knownEmulators: ['Mednafen', 'Beetle PCE', 'Ootake']
   },
@@ -599,7 +564,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1993,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#1d2024', to: '#8a919c', ink: '#f6f8fa', glyph: 'disc' },
+    artwork: { from: '#1d2024', to: '#8a919c', ink: '#f6f8fa' },
     aliases: ['3do', 'fz-1', 'panasonic 3do'],
     knownEmulators: ['Opera', '4DO', 'Phoenix']
   },
@@ -612,7 +577,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1991,
     formFactor: 'home',
     media: 'disc',
-    artwork: { from: '#1b1e24', to: '#4f7f9c', ink: '#f0f7fb', glyph: 'disc' },
+    artwork: { from: '#1b1e24', to: '#4f7f9c', ink: '#f0f7fb' },
     aliases: ['cdi', 'cd-i', 'compact disc interactive'],
     knownEmulators: ['CD-i Emulator', 'MAME']
   },
@@ -625,7 +590,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1999,
     formFactor: 'handheld',
     media: 'cartridge',
-    artwork: { from: '#2b2f38', to: '#c9a05c', ink: '#fff8ec', glyph: 'handheld' },
+    artwork: { from: '#2b2f38', to: '#c9a05c', ink: '#fff8ec' },
     aliases: ['ws', 'wsc', 'wonderswan'],
     knownEmulators: ['Mednafen', 'RetroArch', 'Ares']
   },
@@ -638,7 +603,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1982,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#22262d', to: '#b4483f', ink: '#fff2f0', glyph: 'cartridge' },
+    artwork: { from: '#22262d', to: '#b4483f', ink: '#fff2f0' },
     aliases: ['coleco', 'colecovision', 'cv'],
     knownEmulators: ['BlueMSX', 'MAME', 'RetroArch']
   },
@@ -651,7 +616,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1979,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#31281d', to: '#a8823f', ink: '#fff8ea', glyph: 'cartridge' },
+    artwork: { from: '#31281d', to: '#a8823f', ink: '#fff8ea' },
     aliases: ['intv', 'intellivision'],
     knownEmulators: ['jzIntv', 'Nostalgia', 'MAME']
   },
@@ -664,7 +629,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1978,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#26221c', to: '#7e6a4a', ink: '#fdf8ef', glyph: 'keyboard' },
+    artwork: { from: '#26221c', to: '#7e6a4a', ink: '#fdf8ef' },
     aliases: ['odyssey 2', 'videopac', 'o2'],
     knownEmulators: ['O2EM', 'MAME', 'RetroArch']
   },
@@ -677,7 +642,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1982,
     formFactor: 'home',
     media: 'cartridge',
-    artwork: { from: '#12151b', to: '#4b6ea8', ink: '#eef4ff', glyph: 'arcade' },
+    artwork: { from: '#12151b', to: '#4b6ea8', ink: '#eef4ff' },
     aliases: ['vectrex', 'vector'],
     knownEmulators: ['ParaJVE', 'MAME', 'RetroArch']
   },
@@ -694,7 +659,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1982,
     formFactor: 'computer',
     media: 'tape',
-    artwork: { from: '#3d3a33', to: '#9c8d6f', ink: '#fdfaf2', glyph: 'keyboard' },
+    artwork: { from: '#3d3a33', to: '#9c8d6f', ink: '#fdfaf2' },
     aliases: ['c64', 'commodore 64', 'cbm'],
     knownEmulators: ['VICE', 'Hoxs64', 'Denise']
   },
@@ -707,7 +672,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1985,
     formFactor: 'computer',
     media: 'disc',
-    artwork: { from: '#2c2f38', to: '#d2593f', ink: '#fff3ef', glyph: 'keyboard' },
+    artwork: { from: '#2c2f38', to: '#d2593f', ink: '#fff3ef' },
     aliases: ['amiga', 'a500', 'a1200', 'aga'],
     knownEmulators: ['WinUAE', 'FS-UAE', 'Amiberry']
   },
@@ -720,7 +685,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1982,
     formFactor: 'computer',
     media: 'tape',
-    artwork: { from: '#17191d', to: '#c4324a', ink: '#fff0f2', glyph: 'keyboard' },
+    artwork: { from: '#17191d', to: '#c4324a', ink: '#fff0f2' },
     aliases: ['spectrum', 'zx', 'speccy'],
     knownEmulators: ['Fuse', 'ZEsarUX', 'Spectaculator']
   },
@@ -733,7 +698,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1983,
     formFactor: 'computer',
     media: 'mixed',
-    artwork: { from: '#1d2229', to: '#3f7f8c', ink: '#eefbff', glyph: 'keyboard' },
+    artwork: { from: '#1d2229', to: '#3f7f8c', ink: '#eefbff' },
     aliases: ['msx2', 'msx turbo r', 'msx'],
     knownEmulators: ['openMSX', 'BlueMSX']
   },
@@ -746,7 +711,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1984,
     formFactor: 'computer',
     media: 'tape',
-    artwork: { from: '#26231d', to: '#8f7a3f', ink: '#fdf8e9', glyph: 'keyboard' },
+    artwork: { from: '#26231d', to: '#8f7a3f', ink: '#fdf8e9' },
     aliases: ['cpc', 'cpc464', 'amstrad'],
     knownEmulators: ['WinAPE', 'Caprice32', 'Arnold']
   },
@@ -759,7 +724,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1987,
     formFactor: 'computer',
     media: 'disc',
-    artwork: { from: '#22252b', to: '#616b7d', ink: '#f4f6fa', glyph: 'tower' },
+    artwork: { from: '#22252b', to: '#616b7d', ink: '#f4f6fa' },
     aliases: ['x68k', 'x68000', 'sharp'],
     knownEmulators: ['XM6 Pro-68k', 'MAME', 'PX68k']
   },
@@ -772,7 +737,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1981,
     formFactor: 'computer',
     media: 'disc',
-    artwork: { from: '#14171c', to: '#4a5563', ink: '#eef2f7', glyph: 'keyboard' },
+    artwork: { from: '#14171c', to: '#4a5563', ink: '#eef2f7' },
     aliases: ['dos', 'pc dos', 'dosbox'],
     knownEmulators: ['DOSBox-X', 'DOSBox Staging', 'DOSBox']
   },
@@ -785,7 +750,7 @@ export const CONSOLE_CATALOG: ConsoleDefinition[] = [
     releaseYear: 1971,
     formFactor: 'arcade',
     media: 'mixed',
-    artwork: { from: '#241a2e', to: '#8a4bd4', ink: '#f7f0ff', glyph: 'arcade' },
+    artwork: { from: '#241a2e', to: '#8a4bd4', ink: '#f7f0ff' },
     aliases: ['mame', 'coin-op', 'cabinet', 'fbneo'],
     knownEmulators: ['MAME', 'FinalBurn Neo', 'Supermodel', 'Demul']
   }

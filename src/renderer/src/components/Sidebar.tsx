@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink } from '../router'
 import { useLibrary } from '../state/LibraryContext'
 import { GridIcon, HomeIcon, SettingsIcon } from './icons'
 import { BrandMark } from './TitleBar'

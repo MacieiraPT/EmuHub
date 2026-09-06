@@ -27,7 +27,7 @@ const SORT_OPTIONS = (Object.keys(SORT_LABELS) as LibrarySort[]).map((value) => 
 export function ConsolesPage() {
   const { entries, health, launching } = useLibrary()
   const { settings } = useSettings()
-  const { open, launch, relocateEmulator, removeConsole, reveal } = useConsoleActions()
+  const actions = useConsoleActions()
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<LibrarySort>(settings.library.defaultSort)
   const [mode, setMode] = useState<ViewMode>('list')
@@ -53,14 +53,6 @@ export function ConsolesPage() {
       : entries
     return sortEntries(filtered, sort)
   }, [entries, query, sort])
-
-  const handlers = (entryId: string, executablePath: string | undefined) => ({
-    onOpen: () => open(entryId),
-    onLaunch: () => void launch(entryId),
-    onChangeEmulator: () => void relocateEmulator(entryId),
-    onReveal: () => void reveal(executablePath),
-    onRemove: () => void removeConsole(entryId)
-  })
 
   return (
     <div className="page">
@@ -137,7 +129,7 @@ export function ConsolesPage() {
               view={view}
               healthy={health[view.entry.id]}
               launching={launching === view.entry.id}
-              {...handlers(view.entry.id, view.emulator?.executablePath)}
+              actions={actions}
             />
           ))}
         </div>
@@ -155,7 +147,7 @@ export function ConsolesPage() {
               view={view}
               healthy={health[view.entry.id]}
               launching={launching === view.entry.id}
-              {...handlers(view.entry.id, view.emulator?.executablePath)}
+              actions={actions}
             />
           ))}
         </div>

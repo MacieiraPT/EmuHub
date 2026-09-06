@@ -45,20 +45,36 @@ export function deriveEmulatorName(executablePath: string, definition?: ConsoleD
     .join(' ')
 }
 
-/** Case-insensitive match across console name, manufacturer and aliases. */
-export function matchesQuery(definition: ConsoleDefinition, query: string): boolean {
-  const q = query.trim().toLowerCase()
-  if (q.length === 0) return true
-  const haystack = [
+/**
+ * Searchable text per console, built once. Rebuilding it for every console on
+ * every keystroke was the bulk of the work in the console picker.
+ */
+const searchIndex = new WeakMap<ConsoleDefinition, string>()
+
+function searchTextFor(definition: ConsoleDefinition): string {
+  const cached = searchIndex.get(definition)
+  if (cached !== undefined) return cached
+
+  const text = [
     definition.name,
     definition.shortName,
     definition.manufacturer,
     ...definition.aliases,
     ...definition.knownEmulators,
-    definition.generation ? `gen ${definition.generation}` : ''
+    definition.generation === null ? 'computer' : `gen ${definition.generation}`,
+    String(definition.releaseYear)
   ]
     .join(' ')
     .toLowerCase()
+  searchIndex.set(definition, text)
+  return text
+}
+
+/** Case-insensitive match across console name, manufacturer and aliases. */
+export function matchesQuery(definition: ConsoleDefinition, query: string): boolean {
+  const q = query.trim().toLowerCase()
+  if (q.length === 0) return true
+  const haystack = searchTextFor(definition)
   return q.split(/\s+/).every((token) => haystack.includes(token))
 }
 

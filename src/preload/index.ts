@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IpcChannel, IpcEvent, type NotifyPayload } from '@shared/ipc'
 import type {
   AddConsoleInput,
+  BulkAddResult,
   AppInfo,
   AppSettings,
   ConfiguredConsole,
@@ -53,6 +54,7 @@ const api = {
   library: {
     list: () => invoke<ConfiguredConsole[]>(IpcChannel.libraryList),
     add: (input: AddConsoleInput) => invoke<ConfiguredConsole>(IpcChannel.libraryAdd, input),
+    addMany: (inputs: AddConsoleInput[]) => invoke<BulkAddResult>(IpcChannel.libraryAddMany, inputs),
     update: (input: UpdateConsoleInput) => invoke<ConfiguredConsole>(IpcChannel.libraryUpdate, input),
     setEmulator: (input: SetEmulatorInput) => invoke<ConfiguredConsole>(IpcChannel.librarySetEmulator, input),
     remove: (id: string) => invoke<boolean>(IpcChannel.libraryRemove, id),

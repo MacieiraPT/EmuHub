@@ -1,5 +1,14 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { AddConsoleInput, ConfiguredConsole } from '@shared/types'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode
+} from 'react'
+import type { AddConsoleInput, BulkAddResult, ConfiguredConsole } from '@shared/types'
 import { getConsoleDefinition } from '@shared/data/consoles'
 import { getActiveEmulator, resolveDisplayName, toEntryView, type LibraryEntryView } from '@shared/library'
 import { bridge, describeError, unwrap } from '../lib/api'
@@ -14,6 +23,8 @@ interface LibraryContextValue {
   configuredConsoleIds: Set<string>
   refresh: () => Promise<void>
   addConsole: (input: AddConsoleInput) => Promise<ConfiguredConsole | null>
+  /** Adds several consoles in one write — used by setup and "add console". */
+  addConsoles: (inputs: AddConsoleInput[]) => Promise<BulkAddResult | null>
   removeConsole: (entryId: string, options?: { skipConfirm?: boolean }) => Promise<boolean>
   setEmulator: (entryId: string, executablePath: string, emulatorName?: string) => Promise<boolean>
   /** Opens the native picker and points the console at the chosen file. */
@@ -38,19 +49,35 @@ export function LibraryProvider({
   const [loading, setLoading] = useState(true)
   const [launching, setLaunching] = useState<string | null>(null)
 
-  const checkHealth = useCallback(async () => {
-    try {
-      setHealth(await unwrap(bridge.library.checkEmulators()))
-    } catch {
-      // A failed health sweep only removes a hint; the library still works.
-    }
+  /**
+   * The current entries, readable from callbacks without making those
+   * callbacks depend on them — which keeps their identity stable and lets the
+   * memoised cards skip re-rendering.
+   */
+  const entriesRef = useRef<LibraryEntryView[]>([])
+  entriesRef.current = entries
+
+  /**
+   * Confirms which configured emulators are still on disk. Each sweep stats
+   * every configured path, so it runs on a trailing debounce rather than after
+   * every individual change.
+   */
+  const healthTimer = useRef<number | null>(null)
+  const checkHealth = useCallback((delay = 250) => {
+    if (healthTimer.current !== null) window.clearTimeout(healthTimer.current)
+    healthTimer.current = window.setTimeout(() => {
+      healthTimer.current = null
+      void unwrap(bridge.library.checkEmulators())
+        .then(setHealth)
+        .catch(() => undefined) // A failed sweep only costs a hint.
+    }, delay)
   }, [])
 
   const refresh = useCallback(async () => {
     try {
       const consoles = await unwrap(bridge.library.list())
       setEntries(consoles.map(toEntryView))
-      await checkHealth()
+      checkHealth()
     } catch (error) {
       notify({ tone: 'error', title: 'Could not read your library', ...describeError(error) })
     } finally {
@@ -60,15 +87,34 @@ export function LibraryProvider({
 
   useEffect(() => {
     void refresh()
-    const unsubscribe = bridge.events.onLibraryChanged(() => void refresh())
-    return unsubscribe
-  }, [refresh])
+
+    // A batch of changes (adding five consoles during setup) arrives as a
+    // burst of notifications; collapse them into one reload.
+    let pending: number | null = null
+    const unsubscribe = bridge.events.onLibraryChanged(() => {
+      if (pending !== null) return
+      pending = window.setTimeout(() => {
+        pending = null
+        void refresh()
+      }, 30)
+    })
+
+    // Emulators can be moved or uninstalled while EmuHub sits in the
+    // background, so re-check when the user comes back to the window.
+    const onFocus = (): void => checkHealth(400)
+    window.addEventListener('focus', onFocus)
+
+    return () => {
+      unsubscribe()
+      window.removeEventListener('focus', onFocus)
+      if (pending !== null) window.clearTimeout(pending)
+    }
+  }, [refresh, checkHealth])
 
   const addConsole = useCallback(
     async (input: AddConsoleInput) => {
       try {
         const entry = await unwrap(bridge.library.add(input))
-        await refresh()
         const definition = getConsoleDefinition(entry.consoleId)
         notify({
           tone: 'success',
@@ -83,7 +129,27 @@ export function LibraryProvider({
         return null
       }
     },
-    [notify, refresh]
+    [notify]
+  )
+
+  const addConsoles = useCallback(
+    async (inputs: AddConsoleInput[]) => {
+      try {
+        const result = await unwrap(bridge.library.addMany(inputs))
+        for (const rejection of result.rejected) {
+          notify({
+            tone: 'warning',
+            title: `${getConsoleDefinition(rejection.consoleId)?.name ?? 'A console'} needs attention`,
+            description: rejection.reason
+          })
+        }
+        return result
+      } catch (error) {
+        notify({ tone: 'error', title: 'Could not add those consoles', ...describeError(error) })
+        return null
+      }
+    },
+    [notify]
   )
 
   const setEmulator = useCallback(
@@ -96,7 +162,6 @@ export function LibraryProvider({
             ...(emulatorName ? { emulatorName } : {})
           })
         )
-        await refresh()
         notify({
           tone: 'success',
           title: 'Emulator updated',
@@ -108,12 +173,12 @@ export function LibraryProvider({
         return false
       }
     },
-    [notify, refresh]
+    [notify]
   )
 
   const relocateEmulator = useCallback(
     async (entryId: string) => {
-      const entry = entries.find((item) => item.entry.id === entryId)
+      const entry = entriesRef.current.find((item) => item.entry.id === entryId)
       try {
         const picked = await unwrap(
           bridge.files.pickExecutable({
@@ -130,12 +195,12 @@ export function LibraryProvider({
         return false
       }
     },
-    [entries, notify, setEmulator]
+    [notify, setEmulator]
   )
 
   const removeConsole = useCallback(
     async (entryId: string, options?: { skipConfirm?: boolean }) => {
-      const target = entries.find((item) => item.entry.id === entryId)
+      const target = entriesRef.current.find((item) => item.entry.id === entryId)
       const name = target?.displayName ?? 'this console'
 
       if (confirmBeforeRemoving && !options?.skipConfirm) {
@@ -154,7 +219,6 @@ export function LibraryProvider({
 
       try {
         await unwrap(bridge.library.remove(entryId))
-        await refresh()
         notify({
           tone: 'info',
           title: `${name} removed`,
@@ -166,12 +230,12 @@ export function LibraryProvider({
         return false
       }
     },
-    [confirmBeforeRemoving, entries, notify, refresh]
+    [confirmBeforeRemoving, notify]
   )
 
   const launch = useCallback(
     async (entryId: string) => {
-      const target = entries.find((item) => item.entry.id === entryId)
+      const target = entriesRef.current.find((item) => item.entry.id === entryId)
       setLaunching(entryId)
       try {
         const result = await unwrap(bridge.library.launch(entryId))
@@ -189,19 +253,18 @@ export function LibraryProvider({
           description: described.message,
           action: { label: 'Locate emulator', onClick: () => void relocateEmulator(entryId) }
         })
-        void checkHealth()
+        checkHealth(0)
         return false
       } finally {
         setLaunching(null)
       }
     },
-    [checkHealth, entries, notify, relocateEmulator]
+    [checkHealth, notify, relocateEmulator]
   )
 
   const clearAll = useCallback(async () => {
     try {
       await unwrap(bridge.library.clear())
-      await refresh()
       notify({
         tone: 'info',
         title: 'Library cleared',
@@ -212,7 +275,7 @@ export function LibraryProvider({
       notify({ tone: 'error', title: 'Could not clear the library', ...describeError(error) })
       return false
     }
-  }, [notify, refresh])
+  }, [notify])
 
   const configuredConsoleIds = useMemo(
     () => new Set(entries.map((item) => item.entry.consoleId)),
@@ -227,6 +290,7 @@ export function LibraryProvider({
       configuredConsoleIds,
       refresh,
       addConsole,
+      addConsoles,
       removeConsole,
       setEmulator,
       relocateEmulator,
@@ -241,6 +305,7 @@ export function LibraryProvider({
       configuredConsoleIds,
       refresh,
       addConsole,
+      addConsoles,
       removeConsole,
       setEmulator,
       relocateEmulator,

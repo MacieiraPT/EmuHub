@@ -17,6 +17,29 @@ import { inspectExecutable, verifyExecutable } from './executables'
 
 const nowIso = (): string => new Date().toISOString()
 
+export interface BulkAddResult {
+  added: ConfiguredConsole[]
+  /** Consoles that could not be added, with a message safe to show. */
+  rejected: { consoleId: string; reason: string }[]
+}
+
+function createEntry(consoleId: string, displayName: string | null, emulators: EmulatorProfile[]): ConfiguredConsole {
+  const timestamp = nowIso()
+  return {
+    id: randomUUID(),
+    consoleId,
+    displayName: displayName?.trim() || null,
+    emulators,
+    activeEmulatorId: emulators[0]?.id ?? null,
+    addedAt: timestamp,
+    updatedAt: timestamp,
+    lastLaunchedAt: null,
+    launchCount: 0,
+    favorite: false,
+    metadata: {}
+  }
+}
+
 /** Owns every read and write of the user's console library. */
 export class LibraryRepository {
   private readonly store: JsonStore<LibraryData>
@@ -84,22 +107,71 @@ export class LibraryRepository {
       ]
     }
 
-    const entry: ConfiguredConsole = {
-      id: randomUUID(),
-      consoleId: definition.id,
-      displayName: input.displayName?.trim() || null,
-      emulators,
-      activeEmulatorId: emulators[0]?.id ?? null,
-      addedAt: timestamp,
-      updatedAt: timestamp,
-      lastLaunchedAt: null,
-      launchCount: 0,
-      favorite: false,
-      metadata: {}
-    }
+    const entry = createEntry(definition.id, input.displayName ?? null, emulators)
 
     await this.store.update((data) => ({ ...data, consoles: [...data.consoles, entry] }))
     return entry
+  }
+
+  /**
+   * Adds several consoles in one pass.
+   *
+   * First-run setup and "add console" both submit a batch. Doing it as one
+   * store update means a single file write and a single change broadcast
+   * instead of one of each per console, which is what made adding five
+   * consoles feel slower than adding one.
+   */
+  async addMany(inputs: AddConsoleInput[]): Promise<BulkAddResult> {
+    const existing = await this.list()
+    const taken = new Set(existing.map((entry) => entry.consoleId))
+    const added: ConfiguredConsole[] = []
+    const rejected: BulkAddResult['rejected'] = []
+
+    for (const input of inputs) {
+      const definition = getConsoleDefinition(input.consoleId)
+      if (!definition) {
+        rejected.push({ consoleId: input.consoleId, reason: 'That console is not recognised by EmuHub.' })
+        continue
+      }
+      if (taken.has(definition.id)) {
+        rejected.push({ consoleId: input.consoleId, reason: `${definition.name} is already in your library.` })
+        continue
+      }
+
+      let emulators: EmulatorProfile[] = []
+      if (input.executablePath) {
+        try {
+          const info = await inspectExecutable(input.executablePath)
+          const stamp = nowIso()
+          emulators = [
+            {
+              id: randomUUID(),
+              name: input.emulatorName?.trim() || deriveEmulatorName(info.path, definition),
+              executablePath: info.path,
+              args: [],
+              workingDirectory: null,
+              addedAt: stamp,
+              updatedAt: stamp
+            }
+          ]
+        } catch (error) {
+          // The console is still worth adding; the user can point it at an
+          // emulator later from the library.
+          rejected.push({
+            consoleId: input.consoleId,
+            reason: error instanceof Error ? error.message : 'That emulator file could not be used.'
+          })
+        }
+      }
+
+      taken.add(definition.id)
+      added.push(createEntry(definition.id, input.displayName ?? null, emulators))
+    }
+
+    if (added.length > 0) {
+      await this.store.update((data) => ({ ...data, consoles: [...data.consoles, ...added] }))
+    }
+    return { added, rejected }
   }
 
   async update(input: UpdateConsoleInput): Promise<ConfiguredConsole> {

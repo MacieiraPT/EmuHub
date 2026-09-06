@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { CONSOLE_CATALOG, listGenerations, listManufacturers } from '@shared/data/consoles'
 import { matchesQuery } from '@shared/library'
 import type { ConsoleDefinition } from '@shared/types'
 import { generationLabel, pluralize } from '../lib/format'
-import { ConsoleArt } from './ConsoleArt'
+import { ConsoleArt } from './artwork/ConsoleArt'
 import { SearchField } from './ui/SearchField'
 import { Select } from './ui/Select'
 import { CheckIcon, SearchIcon } from './icons'
@@ -107,7 +107,7 @@ export function ConsolePicker({
               selected={selected.has(definition.id)}
               disabled={disabledIds?.has(definition.id) ?? false}
               disabledLabel={disabledLabel}
-              onToggle={() => onToggle(definition.id)}
+              onToggle={onToggle}
             />
           ))}
         </div>
@@ -116,26 +116,28 @@ export function ConsolePicker({
   )
 }
 
-function ConsoleTile({
+interface ConsoleTileProps {
+  definition: ConsoleDefinition
+  selected: boolean
+  disabled: boolean
+  disabledLabel: string
+  onToggle: (consoleId: string) => void
+}
+
+const ConsoleTile = memo(function ConsoleTile({
   definition,
   selected,
   disabled,
   disabledLabel,
   onToggle
-}: {
-  definition: ConsoleDefinition
-  selected: boolean
-  disabled: boolean
-  disabledLabel: string
-  onToggle: () => void
-}) {
+}: ConsoleTileProps) {
   return (
     <button
       type="button"
       className={`console-tile${selected ? ' is-selected' : ''}${disabled ? ' is-disabled' : ''}`}
       aria-pressed={selected}
       disabled={disabled}
-      onClick={onToggle}
+      onClick={() => onToggle(definition.id)}
     >
       <span className="console-tile__art">
         <ConsoleArt definition={definition} variant="thumb" />
@@ -153,4 +155,4 @@ function ConsoleTile({
       </span>
     </button>
   )
-}
+})

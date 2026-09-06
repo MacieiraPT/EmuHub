@@ -1,6 +1,8 @@
+import { memo } from 'react'
 import type { LibraryEntryView } from '@shared/library'
+import type { ConsoleActions } from '../features/consoles/useConsoleActions'
 import { generationLabel } from '../lib/format'
-import { ConsoleArt } from './ConsoleArt'
+import { ConsoleArt } from './artwork/ConsoleArt'
 import { Button, IconButton } from './ui/Button'
 import { Menu } from './ui/Menu'
 import { StatusPill, type StatusTone } from './ui/StatusPill'
@@ -11,11 +13,7 @@ interface ConsoleCardProps {
   /** `undefined` while the emulator check is still running. */
   healthy: boolean | undefined
   launching: boolean
-  onOpen: () => void
-  onLaunch: () => void
-  onChangeEmulator: () => void
-  onReveal: () => void
-  onRemove: () => void
+  actions: ConsoleActions
 }
 
 export function statusOf(view: LibraryEntryView, healthy: boolean | undefined): StatusTone {
@@ -24,16 +22,11 @@ export function statusOf(view: LibraryEntryView, healthy: boolean | undefined): 
   return healthy ? 'ready' : 'missing'
 }
 
-export function ConsoleCard({
-  view,
-  healthy,
-  launching,
-  onOpen,
-  onLaunch,
-  onChangeEmulator,
-  onReveal,
-  onRemove
-}: ConsoleCardProps) {
+function ConsoleCardView({ view, healthy, launching, actions }: ConsoleCardProps) {
+  const onOpen = (): void => actions.open(view)
+  const onLaunch = (): void => actions.launch(view)
+  const onChangeEmulator = (): void => actions.changeEmulator(view)
+
   const status = statusOf(view, healthy)
 
   return (
@@ -91,10 +84,15 @@ export function ConsoleCard({
                 {
                   label: 'Show emulator in folder',
                   icon: <FolderIcon size={15} />,
-                  onSelect: onReveal,
+                  onSelect: () => actions.reveal(view),
                   disabled: !view.emulator
                 },
-                { label: 'Remove from EmuHub', icon: <TrashIcon size={15} />, onSelect: onRemove, destructive: true }
+                {
+                  label: 'Remove from EmuHub',
+                  icon: <TrashIcon size={15} />,
+                  onSelect: () => actions.remove(view),
+                  destructive: true
+                }
               ]}
               trigger={(triggerProps) => (
                 <IconButton
@@ -113,3 +111,21 @@ export function ConsoleCard({
     </article>
   )
 }
+
+/**
+ * A library can hold dozens of cards, each drawing a full SVG illustration.
+ * Comparing exactly what the card shows keeps an unrelated state change — a
+ * launch elsewhere, a health sweep — from re-rendering all of them.
+ */
+export const ConsoleCard = memo(ConsoleCardView, (previous, next) => {
+  return (
+    previous.actions === next.actions &&
+    previous.healthy === next.healthy &&
+    previous.launching === next.launching &&
+    previous.view.entry.id === next.view.entry.id &&
+    previous.view.displayName === next.view.displayName &&
+    previous.view.entry.consoleId === next.view.entry.consoleId &&
+    previous.view.emulator?.name === next.view.emulator?.name &&
+    previous.view.emulator?.executablePath === next.view.emulator?.executablePath
+  )
+})

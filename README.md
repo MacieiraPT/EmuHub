@@ -11,10 +11,14 @@ location of programs you already have and starts them for you.
 ## What it does
 
 - **Guided first-run setup** — pick your platforms from a searchable catalog of
-  58 consoles, then point EmuHub at each emulator you already have. Consoles can
+  55 consoles, then point EmuHub at each emulator you already have. Consoles can
   be skipped and configured later.
-- **A visual library** — every configured console appears as a card with
-  generated artwork, its emulator, its status and a launch button.
+- **Only platforms you can actually emulate** — the catalog lists a console only
+  where an emulator runs commercial software today. Machines with no working
+  emulator (PlayStation 5, Xbox One, Xbox Series X|S) are left out rather than
+  leading you to a dead end.
+- **A visual library** — every configured console appears as a card with its own
+  hardware illustration, its emulator, its status and a launch button.
 - **One-click launching** — emulators start through the operating system's own
   process API, never a shell.
 - **Graceful recovery** — if an emulator is moved or uninstalled, EmuHub says so
@@ -74,7 +78,9 @@ src/
 │
 └── renderer/src/            The interface
     ├── components/          Reusable UI: buttons, dialogs, menus, cards…
+    │   └── artwork/         One hardware illustration per console
     ├── features/            Onboarding, home, consoles, detail, settings
+    ├── router/              A four-route hash router
     ├── state/               Library, settings and notification stores
     ├── hooks/, lib/         Appearance, shortcuts, formatting, API helpers
     └── styles/              Design tokens, base styles, component styles
@@ -82,8 +88,11 @@ src/
 
 ### Adding a console
 
-Append one entry to `CONSOLE_CATALOG` in `src/shared/data/consoles.ts`. Setup,
-search, filters, artwork and the library pick it up with no other changes.
+Append one entry to `CONSOLE_CATALOG` in `src/shared/data/consoles.ts` and its
+illustration to `CONSOLE_GLYPHS` in
+`src/renderer/src/components/artwork/glyphs.tsx`. Setup, search, filters and the
+library pick it up with no other changes; a console with no illustration yet
+falls back to a generic one.
 
 ```ts
 {
@@ -95,14 +104,29 @@ search, filters, artwork and the library pick it up with no other changes.
   releaseYear: 1996,
   formFactor: 'home',
   media: 'cartridge',
-  artwork: { from: '#2f6d3f', to: '#57b45f', ink: '#f2fff4', glyph: 'cartridge' },
+  artwork: { from: '#2f6d3f', to: '#57b45f', ink: '#f2fff4' },
   aliases: ['n64', 'ultra 64'],
   knownEmulators: ['Project64', 'Mupen64Plus']
 }
 ```
 
-Artwork is drawn at run time from the palette and glyph, so no image files are
-needed and nothing copyrighted ships with the application.
+### Artwork
+
+Each console is drawn as its own machine — the NES front-loading deck, the
+GameCube's carry handle, the PS2 tower, the Game Boy's offset screen — as an
+original vector illustration in a 100 x 100 box. Shapes are painted into an SVG
+mask rather than filled: white is the body, grey recesses a screen or slot,
+black cuts through to the console's gradient. One drawing therefore reads
+correctly on every palette, in light and dark themes alike.
+
+No manufacturer logo, console photograph or other third-party image ships with
+EmuHub. Logos are trademarks, and reproducing them inside a distributed binary
+is a risk the artwork does not need to take. The application icons are drawn the
+same way, by `scripts/generate-icons.mjs`.
+
+Every definition lives in one hidden SVG mounted once at the application root,
+so a library of cards and a picker of fifty-five tiles share a single set of
+gradients, masks and filters instead of each instance building its own.
 
 ### Room to grow
 
@@ -131,6 +155,37 @@ reshaping what is stored today.
   than a shell command, so nothing in a stored path can be interpreted as a
   command. EmuHub requests no elevated privileges and scans no part of your
   file system on its own.
+
+## Performance
+
+EmuHub is meant to stay out of the way. With all 55 consoles configured, on a
+containerised Linux test machine:
+
+| | |
+| --- | --- |
+| Launch to a painted library | 0.7–0.9 s |
+| Renderer JS heap | ~9.5 MB |
+| DOM nodes (full library) | ~2,500 |
+| Main-process CPU over 3 s idle | ~3 ms |
+| Renderer bundle | 312 kB (90 kB gzipped) |
+
+What keeps it there:
+
+- **Nothing runs at idle.** No polling timers, no watchers, no background
+  scanning. The app only touches the file system when you ask it to.
+- **The emulator health check is debounced** and runs on a trailing edge, on
+  window focus and after a launch failure — not once per console per change.
+- **Batched writes.** Adding consoles during setup is a single call, a single
+  file write and a single change notification, however many you picked.
+- **Memoised cards and tiles** compare exactly what they render, so a launch or
+  a health sweep does not re-render an entire library of SVG illustrations.
+- **`content-visibility`** lets off-screen cards, rows and tiles skip layout,
+  paint and rasterisation entirely.
+- **No per-frame blur.** Backdrop filters are limited to the modal scrim, where
+  one exists briefly, instead of sitting behind every card badge and the
+  sidebar.
+- **A four-route hash router** in place of a general-purpose routing library,
+  which cost about a tenth of the bundle for a window with no URL bar.
 
 ## Keyboard
 
