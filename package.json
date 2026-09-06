@@ -1,6 +1,6 @@
 {
   "name": "emuhub",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A modern desktop launcher that centralizes every console emulator installed on your PC.",
   "main": "./out/main/index.js",
   "author": "EmuHub",
