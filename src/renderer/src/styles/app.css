@@ -827,6 +827,7 @@
   gap: 6px;
   border-radius: var(--radius-pill);
   font-weight: 540;
+  line-height: 1.1;
   white-space: nowrap;
   background: var(--surface-hover);
   color: var(--text-muted);
@@ -835,12 +836,13 @@
 
 .status-pill--sm {
   font-size: var(--text-xs);
-  padding: 2px 9px 2px 7px;
+  gap: 5px;
+  padding: 3px 8px 3px 7px;
 }
 
 .status-pill--md {
   font-size: var(--text-sm);
-  padding: 4px 12px 4px 9px;
+  padding: 4px 11px 4px 9px;
 }
 
 .status-pill__dot {
@@ -913,6 +915,16 @@
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
+  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
+}
+
+/* An open dropdown has to escape the card. `overflow: hidden` and the paint
+   containment implied by `content-visibility: auto` both clip it, so lift
+   them — and raise the card above its neighbours — only while a menu is open. */
+.console-card:has(.menu__list) {
+  content-visibility: visible;
+  overflow: visible;
+  z-index: 5;
 }
 
 /* The shared artwork definitions. Kept in the layout (rather than
@@ -1108,6 +1120,18 @@
 
 .console-row:first-of-type {
   border-top: none;
+}
+
+/* Same escape hatch as the card: the list clips its rounded corners and each
+   row paints in containment, either of which would cut the dropdown off. */
+.console-list:has(.menu__list) {
+  overflow: visible;
+}
+
+.console-row:has(.menu__list) {
+  content-visibility: visible;
+  position: relative;
+  z-index: 5;
 }
 
 .console-row:hover {
@@ -1520,6 +1544,11 @@
 
 .menu__list--end { right: 0; }
 .menu__list--start { left: 0; }
+
+.menu__list--up {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
 
 .menu__item {
   display: flex;

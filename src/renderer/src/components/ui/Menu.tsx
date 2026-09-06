@@ -1,4 +1,12 @@
-import { useEffect, useId, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode
+} from 'react'
 
 export interface MenuAction {
   label: string
@@ -17,9 +25,24 @@ interface MenuProps {
 /** Lightweight dropdown menu with roving keyboard focus. */
 export function Menu({ trigger, actions, align = 'end' }: MenuProps) {
   const [open, setOpen] = useState(false)
+  const [placement, setPlacement] = useState<'down' | 'up'>('down')
   const containerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const triggerId = useId()
+
+  /* A card near the bottom of the window has no room below it; drop the list
+     above the trigger instead of letting the viewport cut it off. */
+  useLayoutEffect(() => {
+    if (!open) return
+    const trigger = containerRef.current
+    const list = listRef.current
+    if (!trigger || !list) return
+
+    const rect = trigger.getBoundingClientRect()
+    const needed = list.offsetHeight + 12
+    const below = window.innerHeight - rect.bottom
+    setPlacement(below < needed && rect.top > below ? 'up' : 'down')
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -67,7 +90,7 @@ export function Menu({ trigger, actions, align = 'end' }: MenuProps) {
       {open ? (
         <div
           ref={listRef}
-          className={`menu__list menu__list--${align}`}
+          className={`menu__list menu__list--${align}${placement === 'up' ? ' menu__list--up' : ''}`}
           role="menu"
           aria-labelledby={triggerId}
           onClick={(event) => event.stopPropagation()}
