@@ -17,10 +17,9 @@ function devFriendlyCsp(): Plugin {
       order: 'pre',
       handler(html, context) {
         if (!context.server) return html
-        return html.replace(
-          /script-src 'self'/,
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws: http://localhost:*"
-        )
+        return html
+          .replace("script-src 'self'", "script-src 'self' 'unsafe-inline' 'unsafe-eval'")
+          .replace("connect-src 'self'", "connect-src 'self' ws: http://localhost:*")
       }
     }
   }
