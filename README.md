@@ -52,6 +52,10 @@ npm run dist:mac     # dmg
 Application icons are generated, not vendored — `npm run icons` redraws
 `resources/` from `scripts/generate-icons.mjs`.
 
+The version in `package.json` is what a build reports and what the update check
+compares against, so the source always sits on the version the next release will
+be — never on one already published. `npm run version:check` confirms it.
+
 ## Architecture
 
 EmuHub is an Electron application with three isolated layers. The renderer has
@@ -165,6 +169,10 @@ it, and then:
 There is no update server and no telemetry: the only request is an anonymous
 GET to the public releases API, and turning the check off in Settings stops even
 that.
+
+Because the check reads `package.json`, a build made from this repository must
+always carry a version newer than the newest release — otherwise it would find
+itself out of date on its own machine. `npm run version:check` enforces that.
 
 ### Room to grow
 
