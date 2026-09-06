@@ -122,7 +122,9 @@ export function LibraryProvider({
           })
         )
         if (!picked) return false
-        return await setEmulator(entryId, picked.path, picked.suggestedName)
+        // No name is passed: the repository derives one, preferring a known
+        // emulator over the raw file name.
+        return await setEmulator(entryId, picked.path)
       } catch (error) {
         notify({ tone: 'error', title: 'Could not use that file', ...describeError(error) })
         return false
