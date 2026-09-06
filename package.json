@@ -1,6 +1,6 @@
 {
   "name": "emuhub",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A modern desktop launcher that centralizes every console emulator installed on your PC.",
   "main": "./out/main/index.js",
   "author": "EmuHub",
@@ -15,6 +15,7 @@
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
     "icons": "node scripts/generate-icons.mjs",
+    "version:check": "node scripts/check-version.mjs",
     "package": "npm run build && electron-builder --dir",
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux",

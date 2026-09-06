@@ -14,12 +14,33 @@ npm run build            # typecheck (both projects) then build all three bundle
 npm run typecheck        # typecheck:node + typecheck:web — run this before any push
 npm start                # preview the production build
 npm run icons            # regenerate resources/ from scripts/generate-icons.mjs
+npm run version:check    # is package.json ahead of the newest release? run before committing
 npm run dist:win         # NSIS installer; also dist:linux, dist:mac
 ```
 
-There is **no test suite and no linter configured**. `npm run typecheck` is the only automated check, so lean on it: both tsconfig projects run in strict mode with `noUnusedLocals` and `noUncheckedIndexedAccess`. Do not invent a `npm test` invocation.
+There is **no test suite and no linter configured**. `npm run typecheck` and `npm run version:check` are the only automated checks, so lean on them: both tsconfig projects run in strict mode with `noUnusedLocals` and `noUncheckedIndexedAccess`. Do not invent a `npm test` invocation.
 
 `src/shared/` is compiled by *both* tsconfig projects, so a change there must satisfy the Node and DOM lib sets at once.
+
+## Versioning
+
+**Every change that lands must leave `package.json` on a version ahead of the newest published release.** A build reports whatever `package.json` says, and the updater compares that against the releases page — so the moment the two meet, an app built from this source decides it is out of date and offers to "update" to itself. Source that has moved past a release must say so.
+
+So before committing, always:
+
+```bash
+npm run version:check
+```
+
+If it fails, raise the version in `package.json` and keep `package-lock.json` in step — it carries the same number twice, at the top of the document and in the root `packages[""]` entry.
+
+- **patch** (1.0.1 → 1.0.2) — fixes, copy, refactors, a console added to the catalog
+- **minor** (1.0.1 → 1.1.0) — a new feature, or a settings/library schema bump
+- **major** — a break in what stored configuration or the IPC surface promises
+
+Bump once per branch, not once per commit: the number is what the *next* release will be, so a branch already ahead of the newest release needs no further move.
+
+**Reading the published version is not the obvious thing.** Releases here are tagged by hand — the current tag is `executable`, not a version — and the version is written in the release *title* (`EmuHub v1.0.1`). Both `scripts/check-version.mjs` and `parseVersion` in `src/shared/updates.ts` read the tag first and fall back to the title. Never assume the tag is a version.
 
 ## Architecture
 
