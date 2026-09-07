@@ -87,8 +87,9 @@ export interface ConfiguredConsole {
 /* Settings                                                            */
 /* ------------------------------------------------------------------ */
 
-export type ThemePreference = 'dark' | 'light' | 'system'
-export type AccentColor = 'violet' | 'blue' | 'emerald' | 'amber' | 'rose' | 'cyan'
+/** `oled` is a fully black variant of the dark theme, for OLED panels. */
+export type ThemePreference = 'oled' | 'dark' | 'light' | 'system'
+export type AccentColor = 'violet' | 'blue' | 'emerald' | 'amber' | 'rose' | 'cyan' | 'custom'
 export type CardSize = 'compact' | 'comfortable' | 'large'
 export type LibrarySort = 'recent' | 'name' | 'manufacturer' | 'generation' | 'launches'
 
@@ -105,6 +106,8 @@ export interface GeneralSettings {
 export interface AppearanceSettings {
   theme: ThemePreference
   accent: AccentColor
+  /** `#rrggbb` used when `accent` is `custom`; kept across preset switches. */
+  customAccent: string
   cardSize: CardSize
   reduceMotion: boolean
 }

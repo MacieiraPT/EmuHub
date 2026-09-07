@@ -99,6 +99,46 @@
   --art-overlay: linear-gradient(180deg, rgba(12, 13, 18, 0) 34%, rgba(12, 13, 18, 0.72) 100%);
 }
 
+/* ---------------------------------------------------------------- oled -- */
+
+/*
+ * A true-black variant of the dark theme for OLED panels, where an unlit pixel
+ * draws no power and shows no glow. Only the greys move: every accent, status
+ * and shadow token is inherited from the dark theme above, so one drawing and
+ * one component set still read correctly here.
+ */
+
+[data-theme='oled'] {
+  color-scheme: dark;
+
+  --bg: #000000;
+  /* The ambient wash is dropped: on black it is the one thing that shows as a
+     lit smudge rather than as depth. */
+  --bg-gradient: none;
+  --chrome: #000000;
+  --surface: #0a0a0c;
+  --surface-raised: #101013;
+  --surface-hover: #17171c;
+  --surface-active: #1e1e24;
+  --surface-sunken: #050506;
+
+  /* Borders carry the separation the surfaces no longer do. */
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --text: #f4f5fa;
+  --text-muted: #9ca1b3;
+  --text-subtle: #6b7186;
+  --text-inverse: #000000;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.7);
+  --shadow-md: 0 6px 20px -6px rgba(0, 0, 0, 0.85);
+  --shadow-lg: 0 18px 44px -14px rgba(0, 0, 0, 0.95);
+
+  --scrim: rgba(0, 0, 0, 0.74);
+  --art-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0) 34%, rgba(0, 0, 0, 0.78) 100%);
+}
+
 /* --------------------------------------------------------------- light -- */
 
 [data-theme='light'] {
@@ -155,6 +195,8 @@
 [data-accent='amber'] { --accent-h: 36; --accent-s: 92%; }
 [data-accent='rose'] { --accent-h: 344; --accent-s: 82%; }
 [data-accent='cyan'] { --accent-h: 188; --accent-s: 78%; }
+/* `custom` has no rule of its own: the hue/saturation pair is written onto the
+   document root from the picked colour. */
 
 /* Card density. */
 [data-card-size='compact'] { --card-min: 196px; }

@@ -1,6 +1,7 @@
 import path from 'node:path'
 import type { AppSettings, BackupSettings, SettingsData } from '@shared/types'
 import { createDefaultSettingsData, DEFAULT_SETTINGS, SETTINGS_SCHEMA_VERSION } from '@shared/defaults'
+import { normalizeHexColor } from '@shared/theme'
 import { JsonStore } from './jsonStore'
 
 /** A partial settings patch: any subset of any section. */
@@ -111,12 +112,20 @@ function migrateSettings(raw: unknown): SettingsData | null {
     onboarding: merge(DEFAULT_SETTINGS.onboarding, source.onboarding)
   }
 
-  if (!['dark', 'light', 'system'].includes(settings.appearance.theme)) {
+  if (!['oled', 'dark', 'light', 'system'].includes(settings.appearance.theme)) {
     settings.appearance.theme = DEFAULT_SETTINGS.appearance.theme
   }
-  if (!['violet', 'blue', 'emerald', 'amber', 'rose', 'cyan'].includes(settings.appearance.accent)) {
+  if (
+    !['violet', 'blue', 'emerald', 'amber', 'rose', 'cyan', 'custom'].includes(
+      settings.appearance.accent
+    )
+  ) {
     settings.appearance.accent = DEFAULT_SETTINGS.appearance.accent
   }
+  // A custom accent is written straight into a CSS variable, so only a colour
+  // this build can parse is ever kept.
+  settings.appearance.customAccent =
+    normalizeHexColor(settings.appearance.customAccent) ?? DEFAULT_SETTINGS.appearance.customAccent
   if (!['compact', 'comfortable', 'large'].includes(settings.appearance.cardSize)) {
     settings.appearance.cardSize = DEFAULT_SETTINGS.appearance.cardSize
   }

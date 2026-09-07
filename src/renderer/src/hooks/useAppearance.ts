@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { AppearanceSettings } from '@shared/types'
+import { accentToneOf } from '@shared/theme'
 import { bridge } from '../lib/api'
 
 /**
@@ -29,5 +30,18 @@ export function useAppearance(appearance: AppearanceSettings): void {
     root.dataset['accent'] = appearance.accent
     root.dataset['cardSize'] = appearance.cardSize
     root.dataset['reduceMotion'] = String(appearance.reduceMotion)
+
+    // A preset accent is a stylesheet rule; a custom one has no rule to match,
+    // so its hue and saturation are written straight onto the root. The two
+    // properties are removed again when a preset is chosen, or the inline
+    // values would keep overriding it.
+    const tone = appearance.accent === 'custom' ? accentToneOf(appearance.customAccent) : null
+    if (tone) {
+      root.style.setProperty('--accent-h', String(tone.hue))
+      root.style.setProperty('--accent-s', `${tone.saturation}%`)
+    } else {
+      root.style.removeProperty('--accent-h')
+      root.style.removeProperty('--accent-s')
+    }
   }, [appearance, systemDark])
 }

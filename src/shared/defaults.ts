@@ -1,8 +1,9 @@
+import { DEFAULT_CUSTOM_ACCENT } from './theme'
 import type { AppSettings, LibraryData, SettingsData } from './types'
 
 /** Bump when the persisted shape changes; migrations live in the store. */
 export const LIBRARY_SCHEMA_VERSION = 1
-export const SETTINGS_SCHEMA_VERSION = 2
+export const SETTINGS_SCHEMA_VERSION = 3
 
 /** Marker written into exported backups so a foreign file is rejected early. */
 export const BACKUP_FORMAT = 'emuhub-backup'
@@ -21,6 +22,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   appearance: {
     theme: 'dark',
     accent: 'violet',
+    customAccent: DEFAULT_CUSTOM_ACCENT,
     cardSize: 'comfortable',
     reduceMotion: false
   },

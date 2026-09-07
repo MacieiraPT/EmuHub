@@ -20,6 +20,7 @@ import type {
 } from '@shared/types'
 import { IpcChannel, IpcEvent } from '@shared/ipc'
 import { getConsoleDefinition } from '@shared/data/consoles'
+import { nativeThemeSourceOf } from '@shared/theme'
 import { getActiveEmulator, resolveDisplayName } from '@shared/library'
 import { ok, toResult, UserFacingError } from '../errors'
 import type { LibraryRepository } from '../services/libraryRepository'
@@ -426,7 +427,7 @@ function describeBackup(backup: ParsedBackup, existingCount: number): string {
 
 /** Applies settings that affect the OS or the window shell. */
 export async function applySideEffects(settings: AppSettings, context: IpcContext): Promise<void> {
-  nativeTheme.themeSource = settings.appearance.theme
+  nativeTheme.themeSource = nativeThemeSourceOf(settings.appearance.theme)
   context.runtime.closeToTray = settings.general.closeToTray
   context.runtime.minimizeToTray = settings.general.minimizeToTray
 

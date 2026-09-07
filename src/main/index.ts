@@ -1,6 +1,7 @@
 import { app, nativeTheme } from 'electron'
 import type { StorageHealth } from '@shared/types'
 import { IpcEvent } from '@shared/ipc'
+import { nativeThemeSourceOf } from '@shared/theme'
 import { LibraryRepository } from './services/libraryRepository'
 import { SettingsRepository } from './services/settingsRepository'
 import { WindowManager } from './window'
@@ -40,7 +41,7 @@ async function start(): Promise<void> {
   }
 
   const initial = await settings.get()
-  nativeTheme.themeSource = initial.appearance.theme
+  nativeTheme.themeSource = nativeThemeSourceOf(initial.appearance.theme)
 
   const windows = new WindowManager(configDirectory)
   const tray = new TrayController(windows)
@@ -78,7 +79,7 @@ async function start(): Promise<void> {
 
   await windows.create({
     startHidden,
-    darkTheme: initial.appearance.theme !== 'light',
+    theme: initial.appearance.theme,
     closeToTray: () => runtime.closeToTray,
     minimizeToTray: () => runtime.minimizeToTray
   })
