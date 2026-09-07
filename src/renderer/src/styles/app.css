@@ -2309,11 +2309,31 @@
 
 .accent-picker {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
   flex: none;
 }
 
+.accent-picker__divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--space-1);
+  background: var(--border-strong);
+}
+
+/* The picked value, so the colour can be read back and typed elsewhere. */
+.accent-picker__value {
+  min-width: 62px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
 .accent-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -2329,6 +2349,55 @@
 
 .accent-swatch.is-selected {
   box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px hsl(var(--accent-h) var(--accent-s) 62%);
+}
+
+/* ------------------------------------------------------- custom accent -- */
+
+.accent-custom {
+  position: relative;
+  display: inline-flex;
+}
+
+/*
+ * Unselected it is a hue wheel, so it reads as "any colour" rather than as a
+ * seventh preset; once chosen it becomes the colour itself, like the others.
+ */
+.accent-swatch--custom {
+  background: conic-gradient(
+    from 90deg,
+    #f4707c,
+    #f2b755,
+    #8ede6a,
+    #43d19e,
+    #4bb8ff,
+    #8b6dff,
+    #f4707c
+  );
+  color: #fff;
+}
+
+.accent-swatch--custom > svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+
+.accent-swatch--custom.is-selected {
+  background: var(--swatch);
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--swatch);
+}
+
+/*
+ * The real input covers the swatch so the platform's colour dialog opens
+ * against it, but never takes the click itself.
+ */
+.accent-custom__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* =========================================================================

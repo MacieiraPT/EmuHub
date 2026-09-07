@@ -34,8 +34,10 @@ export const GridIcon = (props: IconProps) => (
 
 export const SettingsIcon = (props: IconProps) => (
   <Icon {...props}>
-    <circle cx="12" cy="12" r="3.1" />
-    <path d="M19.6 14.4a1.5 1.5 0 0 0 .3 1.65l.05.05a1.8 1.8 0 1 1-2.55 2.55l-.05-.05a1.5 1.5 0 0 0-1.65-.3 1.5 1.5 0 0 0-.9 1.37V20a1.8 1.8 0 1 1-3.6 0v-.1a1.5 1.5 0 0 0-.98-1.37 1.5 1.5 0 0 0-1.65.3l-.05.05A1.8 1.8 0 1 1 4 16.33l.05-.05a1.5 1.5 0 0 0 .3-1.65 1.5 1.5 0 0 0-1.37-.9H2.8a1.8 1.8 0 1 1 0-3.6h.1a1.5 1.5 0 0 0 1.37-.98 1.5 1.5 0 0 0-.3-1.65L3.92 7.4A1.8 1.8 0 1 1 6.47 4.85l.05.05a1.5 1.5 0 0 0 1.65.3h.07a1.5 1.5 0 0 0 .9-1.37V3.7a1.8 1.8 0 1 1 3.6 0v.1a1.5 1.5 0 0 0 .9 1.37 1.5 1.5 0 0 0 1.65-.3l.05-.05a1.8 1.8 0 1 1 2.55 2.55l-.05.05a1.5 1.5 0 0 0-.3 1.65v.07a1.5 1.5 0 0 0 1.37.9h.19a1.8 1.8 0 1 1 0 3.6h-.1a1.5 1.5 0 0 0-1.4.76z" />
+    {/* Eight teeth on a 45° pitch, mirrored about both axes — an asymmetric
+        gear reads as a tilted one at sidebar size. */}
+    <path d="M10.77 2.68 13.23 2.68 12.9 5.56 15.91 6.81 17.72 4.54 19.46 6.28 17.19 8.09 18.44 11.1 21.32 10.77 21.32 13.23 18.44 12.9 17.19 15.91 19.46 17.72 17.72 19.46 15.91 17.19 12.9 18.44 13.23 21.32 10.77 21.32 11.1 18.44 8.09 17.19 6.28 19.46 4.54 17.72 6.81 15.91 5.56 12.9 2.68 13.23 2.68 10.77 5.56 11.1 6.81 8.09 4.54 6.28 6.28 4.54 8.09 6.81 11.1 5.56Z" />
+    <circle cx="12" cy="12" r="3.4" />
   </Icon>
 )
 
@@ -220,9 +222,39 @@ export const SunIcon = (props: IconProps) => (
   </Icon>
 )
 
+/**
+ * A moon cut out of a filled disc — the dark theme taken all the way to black.
+ * The crescent is a hole in the same path (`evenodd`) rather than a shape
+ * painted in the surface colour, so it stays a hole on any background.
+ */
+export const OledIcon = ({ size = 18, ...props }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+    focusable="false"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      d="M12 2.9a9.1 9.1 0 1 0 0 18.2 9.1 9.1 0 0 0 0-18.2zm3.9 12.3A5.7 5.7 0 0 1 8.8 8.1a5.7 5.7 0 1 0 7.1 7.1z"
+    />
+  </svg>
+)
+
 export const MoonIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M20 14.2A8.4 8.4 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2z" />
+  </Icon>
+)
+
+/** Overlapping drops, for the colour picker beside the accent presets. */
+export const DropletIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3.2s5.4 5.3 5.4 9a5.4 5.4 0 1 1-10.8 0c0-3.7 5.4-9 5.4-9z" />
+    <path d="M9.5 13.4a2.6 2.6 0 0 0 2.5 2.8" />
   </Icon>
 )
 

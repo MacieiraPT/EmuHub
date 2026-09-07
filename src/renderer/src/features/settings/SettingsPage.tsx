@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { AccentColor, AppInfo, CardSize, LibrarySort, ThemePreference, UpdateState } from '@shared/types'
+import type { AppInfo, CardSize, LibrarySort, ThemePreference, UpdateState } from '@shared/types'
 import { SORT_LABELS } from '@shared/library'
 import { useSettings } from '../../state/SettingsContext'
 import { useLibrary } from '../../state/LibraryContext'
@@ -16,22 +16,15 @@ import {
   ExternalIcon,
   MonitorIcon,
   MoonIcon,
+  OledIcon,
   RefreshIcon,
   SunIcon,
   TrashIcon,
   UploadIcon
 } from '../../components/icons'
+import { AccentPicker } from './AccentPicker'
 import { DownloadProgress } from '../updates/DownloadProgress'
 import { fileNameOf, formatDateTime, pluralize } from '../../lib/format'
-
-const ACCENTS: { value: AccentColor; label: string }[] = [
-  { value: 'violet', label: 'Violet' },
-  { value: 'blue', label: 'Blue' },
-  { value: 'emerald', label: 'Emerald' },
-  { value: 'amber', label: 'Amber' },
-  { value: 'rose', label: 'Rose' },
-  { value: 'cyan', label: 'Cyan' }
-]
 
 const SORT_OPTIONS = (Object.keys(SORT_LABELS) as LibrarySort[]).map((value) => ({
   value,
@@ -208,13 +201,17 @@ export function SettingsPage() {
           <div className="setting-row">
             <div className="setting-row__text">
               <span className="setting-row__label">Theme</span>
-              <span className="setting-row__description">EmuHub is designed for dark rooms, but it follows you.</span>
+              <span className="setting-row__description">
+                EmuHub is designed for dark rooms, but it follows you. OLED goes fully black, for
+                screens where an unlit pixel stays dark.
+              </span>
             </div>
             <SegmentedControl<ThemePreference>
               label="Theme"
               value={settings.appearance.theme}
               onChange={(value) => void patch({ appearance: { theme: value } })}
               options={[
+                { value: 'oled', label: 'OLED', icon: <OledIcon size={15} /> },
                 { value: 'dark', label: 'Dark', icon: <MoonIcon size={15} /> },
                 { value: 'light', label: 'Light', icon: <SunIcon size={15} /> },
                 { value: 'system', label: 'System', icon: <MonitorIcon size={15} /> }
@@ -225,23 +222,16 @@ export function SettingsPage() {
           <div className="setting-row">
             <div className="setting-row__text">
               <span className="setting-row__label">Accent colour</span>
-              <span className="setting-row__description">Used for primary buttons, focus rings and highlights.</span>
+              <span className="setting-row__description">
+                Used for primary buttons, focus rings and highlights. A colour of your own is taken
+                as a hue — the theme still sets its brightness, so it stays readable in both.
+              </span>
             </div>
-            <div className="accent-picker" role="radiogroup" aria-label="Accent colour">
-              {ACCENTS.map((accent) => (
-                <button
-                  key={accent.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={settings.appearance.accent === accent.value}
-                  aria-label={accent.label}
-                  title={accent.label}
-                  data-accent={accent.value}
-                  className={`accent-swatch${settings.appearance.accent === accent.value ? ' is-selected' : ''}`}
-                  onClick={() => void patch({ appearance: { accent: accent.value } })}
-                />
-              ))}
-            </div>
+            <AccentPicker
+              accent={settings.appearance.accent}
+              customAccent={settings.appearance.customAccent}
+              onChange={(appearance) => void patch({ appearance })}
+            />
           </div>
 
           <div className="setting-row">

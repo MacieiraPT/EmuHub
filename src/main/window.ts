@@ -2,6 +2,7 @@ import path from 'node:path'
 import { BrowserWindow, screen, shell, app } from 'electron'
 import { JsonStore } from './services/jsonStore'
 import { IpcEvent } from '@shared/ipc'
+import type { ThemePreference } from '@shared/types'
 
 interface WindowBounds {
   width: number
@@ -16,7 +17,17 @@ const MIN_WIDTH = 880
 const MIN_HEIGHT = 600
 
 /** Background colours match the renderer shell so there is no flash on open. */
-const BACKGROUND = { dark: '#101116', light: '#f4f5f8' }
+const BACKGROUND = { oled: '#000000', dark: '#101116', light: '#f4f5f8' }
+
+/**
+ * `system` cannot be resolved before the window exists, so it takes the dark
+ * shell: the window is painted behind a renderer that has not styled itself
+ * yet, and the dark tone is the less jarring of the two for that instant.
+ */
+function backgroundFor(theme: ThemePreference): string {
+  if (theme === 'oled') return BACKGROUND.oled
+  return theme === 'light' ? BACKGROUND.light : BACKGROUND.dark
+}
 
 export class WindowManager {
   private window: BrowserWindow | null = null
@@ -51,7 +62,7 @@ export class WindowManager {
 
   async create(options: {
     startHidden: boolean
-    darkTheme: boolean
+    theme: ThemePreference
     closeToTray: () => boolean
     minimizeToTray: () => boolean
   }): Promise<BrowserWindow> {
@@ -64,7 +75,7 @@ export class WindowManager {
       minWidth: MIN_WIDTH,
       minHeight: MIN_HEIGHT,
       show: false,
-      backgroundColor: options.darkTheme ? BACKGROUND.dark : BACKGROUND.light,
+      backgroundColor: backgroundFor(options.theme),
       title: 'EmuHub',
       autoHideMenuBar: true,
       frame: process.platform === 'darwin',
