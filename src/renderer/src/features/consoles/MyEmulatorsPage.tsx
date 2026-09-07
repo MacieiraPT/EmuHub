@@ -86,7 +86,7 @@ export function MyEmulatorsPage() {
                 value={query}
                 onValueChange={setQuery}
                 label="Search your consoles"
-                placeholder="Search by console, emulator or path…"
+                placeholder="Search consoles or emulators…"
                 shortcutHint="Ctrl F"
                 className="page-header__search"
               />
