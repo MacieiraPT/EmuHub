@@ -1197,6 +1197,12 @@
   font-style: italic;
 }
 
+/* The status column is sized for the longest label; without this the pill
+   stretches to fill it and "Ready" sits in a box several times its width. */
+.console-row > .status-pill {
+  justify-self: start;
+}
+
 .console-row__actions {
   display: flex;
   align-items: center;
